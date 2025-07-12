@@ -4,9 +4,11 @@ using System.Collections.Generic;
 public class PuzzleManager : MonoBehaviour
 {
     public List<Piece> pieces;
+    public List<Vector3> AnswerPositions;
 
     //instance template
     public static PuzzleManager Instance { get; private set; }
+
     void Awake()
     {
         if (Instance == null)
@@ -31,16 +33,16 @@ public class PuzzleManager : MonoBehaviour
     }
 
     //checking if released piece fits into other pieces
-    public bool CheckConnection(Piece currentPiece)
+    public void CheckConnection(Piece currentPiece)
     {
-        for(int i =  0; i < pieces.Count; i ++)
+        for (int i = 0; i < pieces.Count; i++)
         {
             if (pieces[i] == currentPiece || Mathf.Abs(currentPiece.relativePositions[i].x - 987654321) <= 0.1f) continue;
             //when answer contains p as relative piece for currentpiece
             Vector3 currentRelativePos = pieces[i].transform.position - currentPiece.transform.position;
-            Vector3 answerRelativePos = new Vector3(currentPiece.relativePositions[i].x, currentPiece.relativePositions[i].y, 0);
+            Vector3 answerRelativePos = RotateVector(new Vector3(currentPiece.relativePositions[i].x, currentPiece.relativePositions[i].y, 0), currentPiece.transform.eulerAngles.z);
             //checking if angle is right
-            if (Mathf.Abs(Mathf.DeltaAngle(currentPiece.transform.eulerAngles.z, currentPiece.answerAngle)) <= 1f && Mathf.Abs(Mathf.DeltaAngle(pieces[i].transform.eulerAngles.z, pieces[i].answerAngle)) <= 1f)
+            if (Mathf.Abs(Mathf.DeltaAngle(currentPiece.transform.eulerAngles.z, pieces[i].transform.eulerAngles.z)) <= 1f)
             {
                 if (Vector3.Distance(currentRelativePos, answerRelativePos) < 0.1f)
                 {
@@ -48,14 +50,13 @@ public class PuzzleManager : MonoBehaviour
                 }
             }
         }
-        return false;
     }
 
     //정답과 놓은 곳의 오차를 원래 움직이던 piece 기준으로 보정해줌 + 두 조각 하나로 연결
     public void Connect(Piece dragged, int i)
     {
 
-        pieces[i].transform.position = dragged.transform.position + new Vector3(dragged.relativePositions[i].x, dragged.relativePositions[i].y, 0);
+        dragged.transform.position = pieces[i].transform.position + RotateVector(new Vector3(pieces[i].relativePositions[pieces.IndexOf(dragged)].x, pieces[i].relativePositions[pieces.IndexOf(dragged)].y, 0), dragged.transform.eulerAngles.z);
         if (!(dragged.connectedPieces.Contains(pieces[i]) || pieces[i] == dragged))
         {
             dragged.connectedPieces.Add(pieces[i]);
@@ -97,9 +98,41 @@ public class PuzzleManager : MonoBehaviour
             {
                 if (i != j)
                 {
-                    Debug.Log("piece from"+i+"to"+j+": "+(pieces[j].transform.position - pieces[i].transform.position).ToString("F3"));
+                    Debug.Log("piece from" + i + "to" + j + ": " + (pieces[j].transform.position - pieces[i].transform.position).ToString("F3"));
                 }
             }
+        }
+    }
+
+    public Vector3 RotateVector(Vector3 v, float degree)
+    {
+        float radians = degree * Mathf.Deg2Rad;
+        float sin = Mathf.Sin(radians);
+        float cos = Mathf.Cos(radians);
+
+        float x = v.x * cos - v.y * sin;
+        float y = v.x * sin + v.y * cos;
+
+        return new Vector3(x, y, 0);
+    }
+
+    public void AdjustRotation(Piece center, float degree)
+    {
+        List<Piece> cp = GetConnectedGroup(center);
+        foreach (Piece p in cp)
+        {
+            Vector3 rp = p.transform.position - center.transform.position;
+            p.transform.position -= rp;
+            p.transform.position += RotateVector(rp, degree);
+            p.transform.Rotate(0f, 0f, degree);
+        }
+    }
+
+    public void CheckAnswer(Piece p)
+    {
+        if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f)
+        {
+            p.inRightPos = true;
         }
     }
 }

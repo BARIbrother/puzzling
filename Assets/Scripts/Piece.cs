@@ -6,8 +6,8 @@ public class Piece : MonoBehaviour
 {
     public List<Vector3> relativePositions;
     public List<Piece> connectedPieces = new List<Piece>();
-    public float answerAngle;
     public bool clicked = false;
+    public bool inRightPos = false;
     private Camera mainCamera;
 
     private Vector3 lastmouseWorld = new Vector3(0, 0, 0);
@@ -24,11 +24,11 @@ public class Piece : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                transform.Rotate(0f, 0f, 90f); // 왼쪽으로 90도 회전
+                PuzzleManager.Instance.AdjustRotation(this, 90f);
             }
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
-                transform.Rotate(0f, 0f, -90f); // 오른쪽으로 90도 회전
+                PuzzleManager.Instance.AdjustRotation(this, -90f);
             }
         }
     }
@@ -42,15 +42,15 @@ public class Piece : MonoBehaviour
 
     void OnMouseDrag()
     {
-        if (clicked)
+        if (clicked && !inRightPos)
         {
-            
+
             Vector3 currentmouseWorld = GetMouseWorldPosition();
             Vector3 delta = currentmouseWorld - lastmouseWorld;
             lastmouseWorld = currentmouseWorld;
 
             List<Piece> cg = PuzzleManager.Instance.GetConnectedGroup(this);
-            for (int i = 0; i < cg.Count; i ++)
+            for (int i = 0; i < cg.Count; i++)
             {
                 cg[i].transform.position += delta;
             }
@@ -61,6 +61,11 @@ public class Piece : MonoBehaviour
     {
         clicked = false;
         PuzzleManager.Instance.CheckConnection(this);
+        List<Piece> cg = PuzzleManager.Instance.GetConnectedGroup(this);
+        for (int i = 0; i < cg.Count; i ++)
+        {
+            PuzzleManager.Instance.CheckAnswer(cg[i]);
+        }
     }
 
 
