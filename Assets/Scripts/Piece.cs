@@ -20,7 +20,7 @@ public class Piece : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (clicked)
+        if (clicked && !inRightPos)
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
@@ -35,9 +35,12 @@ public class Piece : MonoBehaviour
 
     void OnMouseDown()
     {
-        Debug.Log("clicked");
-        clicked = true;
-        lastmouseWorld = GetMouseWorldPosition();
+        if (!inRightPos)
+        {
+            Debug.Log("clicked");
+            clicked = true;
+            lastmouseWorld = GetMouseWorldPosition();
+        }
     }
 
     void OnMouseDrag()
@@ -60,12 +63,12 @@ public class Piece : MonoBehaviour
     void OnMouseUp()
     {
         clicked = false;
-        PuzzleManager.Instance.CheckConnection(this);
         List<Piece> cg = PuzzleManager.Instance.GetConnectedGroup(this);
         for (int i = 0; i < cg.Count; i ++)
         {
             PuzzleManager.Instance.CheckAnswer(cg[i]);
         }
+        PuzzleManager.Instance.CheckConnection(this);
     }
 
 
