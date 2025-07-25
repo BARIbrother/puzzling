@@ -178,6 +178,7 @@ MonoBehaviour:
   - {x: 987654340, y: 987654340, z: 987654340}
   - {x: -0.827, y: 1.058, z: 0}
   - {x: -1.245, y: -0.086, z: 0}
+  answerCP: 010000000300000004000000
   connectedPieces: []
   clicked: 0
   inRightPos: 0

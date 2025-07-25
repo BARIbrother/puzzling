@@ -9,8 +9,8 @@ public class PuzzleManager : MonoBehaviour
     public List<GameObject> blurredpieces;
     public List<Vector3> AnswerPositions;
 
-    public int currentPuzzleIndex = 1;
-    private int totalPuzzleNumber = 1;
+    public int currentPuzzleIndex = 4;
+    private int totalPuzzleNumber = 4;
 
 
     private Shader solidColorShader;
@@ -49,15 +49,15 @@ public class PuzzleManager : MonoBehaviour
         {
             PrintAllRelativeLocations();
         }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.Z))
         {
             currentPuzzleIndex -= 1;
-            LoadPuzzle((currentPuzzleIndex % totalPuzzleNumber) + 1);
+            LoadPuzzle(currentPuzzleIndex% totalPuzzleNumber + 1);
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             currentPuzzleIndex += 1;
-            LoadPuzzle((currentPuzzleIndex % totalPuzzleNumber) + 1);
+            LoadPuzzle(currentPuzzleIndex % totalPuzzleNumber + 1);
         }
         //first gimic
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -65,6 +65,7 @@ public class PuzzleManager : MonoBehaviour
             StartCoroutine(ChangeColorAFterDelay(5f));
         }
         //second gimic
+        //activates when starting game
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             Debug.Log("second gimic");
@@ -82,10 +83,12 @@ public class PuzzleManager : MonoBehaviour
     {
         for (int i = 0; i < pieces.Count; i++)
         {
-            if (pieces[i] == currentPiece || Mathf.Abs(currentPiece.relativePositions[i].x - 987654321) <= 0.1f || currentPiece.inRightPos) continue;
+            if (pieces[i] == currentPiece || !currentPiece.answerCP.Contains(i) || currentPiece.inRightPos) continue;
             //when answer contains p as relative piece for currentpiece
             Vector3 currentRelativePos = pieces[i].transform.position - currentPiece.transform.position;
-            Vector3 answerRelativePos = RotateVector(new Vector3(currentPiece.relativePositions[i].x, currentPiece.relativePositions[i].y, 0), currentPiece.transform.eulerAngles.z);
+            Vector3 answerRelativePos = RotateVector(new Vector3(AnswerPositions[pieces.IndexOf(pieces[i])].x - AnswerPositions[pieces.IndexOf(currentPiece)].x,
+                                                                AnswerPositions[pieces.IndexOf(pieces[i])].y - AnswerPositions[pieces.IndexOf(currentPiece)].y, 0),
+                                                                currentPiece.transform.eulerAngles.z);
             //checking if angle is right
             if (Mathf.Abs(Mathf.DeltaAngle(currentPiece.transform.eulerAngles.z, pieces[i].transform.eulerAngles.z)) <= 1f)
             {
@@ -101,7 +104,9 @@ public class PuzzleManager : MonoBehaviour
     public void Connect(Piece dragged, int i)
     {
 
-        dragged.transform.position = pieces[i].transform.position + RotateVector(new Vector3(pieces[i].relativePositions[pieces.IndexOf(dragged)].x, pieces[i].relativePositions[pieces.IndexOf(dragged)].y, 0), dragged.transform.eulerAngles.z);
+        dragged.transform.position = pieces[i].transform.position + RotateVector(new Vector3(AnswerPositions[pieces.IndexOf(dragged)].x - AnswerPositions[pieces.IndexOf(pieces[i])].x,
+                                                                                             AnswerPositions[pieces.IndexOf(dragged)].y - AnswerPositions[pieces.IndexOf(pieces[i])].y, 0),
+                                                                                              dragged.transform.eulerAngles.z);
         if (!(dragged.connectedPieces.Contains(pieces[i]) || pieces[i] == dragged))
         {
             dragged.connectedPieces.Add(pieces[i]);

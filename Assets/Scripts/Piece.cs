@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Piece : MonoBehaviour
 {
-    public List<Vector3> relativePositions;
+    public List<int> answerCP;
     public List<Piece> connectedPieces = new List<Piece>();
     public bool clicked = false;
     public bool inRightPos = false;

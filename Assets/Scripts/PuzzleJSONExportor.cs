@@ -18,7 +18,7 @@ public class PuzzleJsonExportor : MonoBehaviour
         PositionData ans = new PositionData(answerPositions);
         string json = JsonUtility.ToJson(ans, true);
 
-        string path = Application.dataPath + "/Resources/PuzzleData/Tutorial/answerPos.json";
+        string path = Application.dataPath + "/Resources/PuzzleData/5/answerPos.json";
         File.WriteAllText(path, json);
 
         Debug.Log("Puzzle JSON 저장 완료: " + path);
