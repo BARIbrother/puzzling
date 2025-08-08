@@ -64,10 +64,7 @@ public class Piece : MonoBehaviour
     {
         clicked = false;
         List<Piece> cg = PuzzleManager.Instance.GetConnectedGroup(this);
-        for (int i = 0; i < cg.Count; i ++)
-        {
-            PuzzleManager.Instance.CheckAnswer(cg[i]);
-        }
+        PuzzleManager.Instance.CheckAnswer();
         PuzzleManager.Instance.CheckConnection(this);
     }
 

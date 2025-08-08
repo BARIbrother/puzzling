@@ -77,7 +77,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 017333d3333986245888d736a9950890, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -180,12 +180,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b63990b17aa9644bb00a99737e82157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativePositions:
-  - {x: 0.827, y: -1.058, z: 0}
-  - {x: -0.672, y: -0.577, z: 0}
-  - {x: -1.258, y: 0.143, z: 0}
-  - {x: 987654340, y: 987654340, z: 987654340}
-  - {x: 987654340, y: 987654340, z: 9.876544e+16}
   answerCP: 000000000100000002000000
   connectedPieces: []
   clicked: 0

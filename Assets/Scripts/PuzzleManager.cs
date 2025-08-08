@@ -9,14 +9,15 @@ public class PuzzleManager : MonoBehaviour
     public List<GameObject> blurredpieces;
     public List<Vector3> AnswerPositions;
 
-    public int currentPuzzleIndex = 4;
-    private int totalPuzzleNumber = 4;
+    public int currentPuzzleIndex = 0;
+    public int totalPuzzleNumber = 4;
 
 
     private Shader solidColorShader;
 
     //var for third gimic
     public bool onThirdGimic = false;
+    public Coroutine tgCoroutine;
     private int piececount = 0;
     private List<Piece> piecesToChangeWhite;
     private static System.Random rng = new System.Random();
@@ -34,7 +35,7 @@ public class PuzzleManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        LoadPuzzle(currentPuzzleIndex);
+        //LoadPuzzle(currentPuzzleIndex);
         solidColorShader = Shader.Find("GUI/Text Shader");
         if (solidColorShader == null)
         {
@@ -45,19 +46,15 @@ public class PuzzleManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            PrintAllRelativeLocations();
-        }
         if (Input.GetKeyDown(KeyCode.Z))
         {
             currentPuzzleIndex -= 1;
-            LoadPuzzle(currentPuzzleIndex% totalPuzzleNumber + 1);
+            LoadPuzzle();
         }
         if (Input.GetKeyDown(KeyCode.X))
         {
             currentPuzzleIndex += 1;
-            LoadPuzzle(currentPuzzleIndex % totalPuzzleNumber + 1);
+            LoadPuzzle();
         }
         //first gimic
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -178,27 +175,46 @@ public class PuzzleManager : MonoBehaviour
         }
     }
 
-    public void CheckAnswer(Piece p)
+    public void CheckAnswer()
     {
-        if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.rotation.z) < 1f)
+        piececount = 0;
+        foreach (Piece p in pieces)
         {
-            p.inRightPos = true;
-            p.transform.position = AnswerPositions[pieces.IndexOf(p)];
-            if (onThirdGimic)
+            if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.rotation.z) < 1f)
             {
+                p.inRightPos = true;
+                SpriteRenderer ssr = p.gameObject.GetComponent<SpriteRenderer>();
+                if (ssr != null)
+                {
+                    ssr.sortingOrder = 2;
+                }
+                p.transform.position = AnswerPositions[pieces.IndexOf(p)];
                 piececount++;
-                CheckPieceCount();
+                tgCoroutine = StartCoroutine(FireThirdGimic(30f));
             }
-        }
+        } 
+        CheckPieceCount();
+        Debug.Log(piececount);
     }
 
-    public void LoadPuzzle(int index)
+    public void ClearPuzzle()
     {
+        foreach (var obj in new List<Piece>(pieces))
+        {
+            if (obj != null)
+                Destroy(obj.gameObject);
+        }
         //clear previous data
-        pieces = new List<Piece>();
-        blurredpieces = new List<GameObject>();
-        AnswerPositions = new List<Vector3>();
+        pieces.Clear();
+        blurredpieces.Clear();
+        AnswerPositions.Clear();
+        tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+    }
 
+    public void LoadPuzzle()
+    {
+        ClearPuzzle();
+        int index = currentPuzzleIndex % totalPuzzleNumber + 1;
         //loading puzzle position data
         TextAsset jsonFile = Resources.Load<TextAsset>($"PuzzleData/{index}/answerPos");
         PositionData data = JsonUtility.FromJson<PositionData>(jsonFile.text);
@@ -229,6 +245,11 @@ public class PuzzleManager : MonoBehaviour
             }
         }
         Debug.Log("pieces loaded");
+
+        if (onThirdGimic)
+        {
+            tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+        }
     }
 
     private IEnumerator ChangeColorAFterDelay(float delaySeconds)
@@ -263,12 +284,14 @@ public class PuzzleManager : MonoBehaviour
 
     public void ChangeToBlurredPiece()
     {
+        List<Piece> newPieces = new List<Piece>(pieces);
+
         foreach (GameObject g in blurredpieces)
         {
-            foreach (Piece p in pieces)
+            for (int i = 0; i < newPieces.Count; i++)
             {
-                Debug.Log(p.name);
-                if (g.name.Contains(p.name.Substring(0,p.name.Length-7)))
+                Piece p = newPieces[i];
+                if (g.name.Contains(p.name.Substring(0, p.name.Length - 7)))
                 {
                     GameObject pieceObj = Instantiate(g);
                     Piece piece = pieceObj.GetComponent<Piece>();
@@ -278,7 +301,10 @@ public class PuzzleManager : MonoBehaviour
                     piece.connectedPieces = p.connectedPieces;
                     piece.clicked = p.clicked;
                     piece.inRightPos = p.inRightPos;
-                    pieces[pieces.IndexOf(p)] = piece;
+
+                    // 원래 리스트 업데이트
+                    pieces[i] = piece;
+
                     Destroy(p.gameObject);
                     break;
                 }
@@ -310,24 +336,40 @@ public class PuzzleManager : MonoBehaviour
     {
         onThirdGimic = true;
     }
+
+    IEnumerator FireThirdGimic(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ThirdGimic(30f);
+    }
+
+    void ThirdGimic(float delay)
+    {
+        List<Piece> imsi = ShuffleList(pieces);
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            if (!imsi[i].inRightPos)
+            {
+                SpriteRenderer sr = imsi[i].GetComponent<SpriteRenderer>();
+                if (sr != null)
+                {
+                    sr.material.shader = solidColorShader;
+                    sr.material.color = Color.white;
+                }
+                break;
+            }
+        }
+        if (delay < 60f) delay += 15f;
+        tgCoroutine = StartCoroutine(FireThirdGimic(delay));
+    }
+
+
     public void CheckPieceCount()
     {
-        if (piececount % 2 == 0)
+        if (piececount == pieces.Count)
         {
-            List<Piece> imsi = ShuffleList(pieces);
-            for (int i = 0; i < pieces.Count; i++)
-            {
-                if (!imsi[i].inRightPos)
-                {
-                    SpriteRenderer sr = imsi[i].GetComponent<SpriteRenderer>();
-                    if (sr != null)
-                    {
-                        sr.material.shader = solidColorShader;
-                        sr.material.color = Color.white;
-                    }
-                    break;
-                }
-            }
+            ClearPuzzle();
+            GameManager.Instance.EndPuzzleStage();
         }
     }
 }
