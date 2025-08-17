@@ -17,7 +17,9 @@ public class DialogueManager : MonoBehaviour
 
     public List<TextAsset> DialogueData;
     public int currentDNum = 0;
+    public bool canGoToNext = false;
 
+    Camera cam;
     public static DialogueManager Instance { get; private set; }
 
     void Awake()
@@ -32,13 +34,14 @@ public class DialogueManager : MonoBehaviour
     {
         Debug.Log("대화 시작");
         StartDialogue();
+        cam = Camera.main;
     }
 
     void Update()
     {
         if (isOnDialogue)
         {
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) && canGoToNext == true)
             {
                 NextDialogue();
             }
@@ -51,7 +54,7 @@ public class DialogueManager : MonoBehaviour
         lines = dialogueLines;
         isOnDialogue = true;
         currentLine = 0;
-        speakerText.gameObject.SetActive(true);
+        speakerText.gameObject.SetActive(true); 
         bodyText.gameObject.SetActive(true);
         dialoguePanel.gameObject.SetActive(true);
         ShowLine();
@@ -60,19 +63,37 @@ public class DialogueManager : MonoBehaviour
     void ShowLine()
     {
         var line = lines[currentLine];
+        canGoToNext = false;
         speakerText.text = line.speaker;
-        StartCoroutine(TypeText(line.text));
+        StartCoroutine(TypeText(line));
         //portraitImage.sprite = LoadPortrait(line.portrait);
     }
 
-    IEnumerator TypeText(string text)
+    IEnumerator TypeText(DialogueLine line)
     {
+        switch (line.evt)
+        {
+            case "B":
+                yield return StartCoroutine(EyeBlinkEffect.Instance.BlinkSequence());
+                break;
+            case "ZI":
+                StartCoroutine(ZoomCameraEffect.Instance.ZoomIO(20f, 1f));
+                yield return new WaitForSeconds(1f);
+                StartCoroutine(ZoomCameraEffect.Instance.ZoomIO(25f, 1f));
+                break;
+        }
+
         bodyText.text = "";
-        foreach (char c in text)
+        foreach (char c in line.text)
         {
             bodyText.text += c;
             yield return new WaitForSeconds(0.02f);
         }
+        if (line.evt == "S")
+        {
+            yield return new WaitForSeconds(3f);
+        }
+        canGoToNext = true;
     }
 
     public void NextDialogue()
@@ -109,12 +130,22 @@ public class DialogueManager : MonoBehaviour
             if (string.IsNullOrWhiteSpace(row)) continue;
             string[] fields = row.Split(',');
 
-            if (fields.Length >= 2)
+            if (fields.Length == 2)
             {
                 DialogueLine line = new DialogueLine
                 {
                     speaker = fields[0].Trim(),
                     text = fields[1].Trim(),
+                };
+                l.Add(line);
+            }
+            else if (fields.Length == 3)
+            {
+                DialogueLine line = new DialogueLine
+                {
+                    speaker = fields[0].Trim(),
+                    text = fields[1].Trim(),
+                    evt = fields[2].Trim()
                 };
                 l.Add(line);
             }

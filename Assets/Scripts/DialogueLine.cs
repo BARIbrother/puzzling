@@ -4,5 +4,7 @@ using UnityEngine;
 public class DialogueLine
 {
     public string speaker;
-    public string text; 
+    public string text;
+
+    public string evt;
 }

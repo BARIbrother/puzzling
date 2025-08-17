@@ -190,6 +190,7 @@ public class PuzzleManager : MonoBehaviour
                 }
                 p.transform.position = AnswerPositions[pieces.IndexOf(p)];
                 piececount++;
+                StopCoroutine(tgCoroutine);
                 tgCoroutine = StartCoroutine(FireThirdGimic(30f));
             }
         } 
@@ -208,6 +209,7 @@ public class PuzzleManager : MonoBehaviour
         pieces.Clear();
         blurredpieces.Clear();
         AnswerPositions.Clear();
+        StopCoroutine(tgCoroutine);
         tgCoroutine = StartCoroutine(FireThirdGimic(30f));
     }
 
@@ -360,6 +362,7 @@ public class PuzzleManager : MonoBehaviour
             }
         }
         if (delay < 60f) delay += 15f;
+        StopCoroutine(tgCoroutine);
         tgCoroutine = StartCoroutine(FireThirdGimic(delay));
     }
 
