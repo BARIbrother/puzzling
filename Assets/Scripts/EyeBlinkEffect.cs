@@ -38,8 +38,10 @@ public class EyeBlinkEffect : MonoBehaviour
         blackOverlay.gameObject.SetActive(false);
     }
 
-    IEnumerator FadeFill(float from, float to)
+    public IEnumerator FadeFill(float from, float to)
     {
+        blackOverlay.gameObject.SetActive(true);
+        blackOverlay.fillAmount = 1f;
         float t = 0f;
         while (t < 1f)
         {

@@ -10,8 +10,10 @@ public class GameManager : MonoBehaviour
     public DialogueManager dm;
     public PuzzleManager pm;
     public int currentStageIndex = -1;
-    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.P, GameStage.D, GameStage.P, GameStage.P };
+    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.P, GameStage.D, GameStage.D, GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.P, GameStage.D};
     public static GameManager Instance { get; private set; }
+
+    public bool AlreadyPassed = false;
 
     void Awake()
     {
@@ -30,28 +32,49 @@ public class GameManager : MonoBehaviour
 
 
     void Update()
-    {
-
+    { 
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            if (stages[currentStageIndex] == GameStage.D)
+            {
+                DialogueManager.Instance.EndDialogue();
+                dm.currentDNum += 1;
+            }
+            else
+            {
+                PuzzleManager.Instance.ClearPuzzle();
+                pm.currentPuzzleIndex += 1;
+            }   
+            NextStage(); 
+        }
     }
 
-    void StartPuzzleStage()
+    public void StartPuzzleStage()
     {
         Debug.Log("Start Puzzle");
-        pm.LoadPuzzle();
+        if(!AlreadyPassed)
+        {
+            pm.LoadPuzzle();
+        }
+        else
+        {
+            AlreadyPassed = false;
+        }
     }
 
     public void EndPuzzleStage()
     {
         Debug.Log("End Puzzle");
+        AlreadyPassed = false;
         if (pm.currentPuzzleIndex < pm.totalPuzzleNumber - 1)
         {
-            pm.currentPuzzleIndex += 1;
+                pm.currentPuzzleIndex += 1;
         }
 
         NextStage();
     }
 
-    void StartDialogueStage()
+    public void StartDialogueStage()
     {
         Debug.Log("Start Dialogue");
         dm.StartDialogue();
@@ -82,6 +105,7 @@ public class GameManager : MonoBehaviour
         else
         {
             StartPuzzleStage();
+            PuzzleManager.Instance.can_click = true;
         }    
 
         

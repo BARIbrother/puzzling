@@ -35,7 +35,7 @@ public class Piece : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!inRightPos)
+        if (!inRightPos && PuzzleManager.Instance.can_click)
         {
             Debug.Log("clicked");
             clicked = true;

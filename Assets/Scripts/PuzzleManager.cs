@@ -9,8 +9,10 @@ public class PuzzleManager : MonoBehaviour
     public List<GameObject> blurredpieces;
     public List<Vector3> AnswerPositions;
 
+
+    public bool can_click = true;
     public int currentPuzzleIndex = 0;
-    public int totalPuzzleNumber = 4;
+    public int totalPuzzleNumber = 5;
 
 
     private Shader solidColorShader;
@@ -19,6 +21,7 @@ public class PuzzleManager : MonoBehaviour
     public bool onThirdGimic = false;
     public Coroutine tgCoroutine;
     private int piececount = 0;
+    public int finalWhitecount = 0;
     private List<Piece> piecesToChangeWhite;
     private static System.Random rng = new System.Random();
     //instance template
@@ -178,11 +181,16 @@ public class PuzzleManager : MonoBehaviour
     public void CheckAnswer()
     {
         piececount = 0;
+        int fwc = 0;
         foreach (Piece p in pieces)
         {
-            if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.rotation.z) < 1f)
+            if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.eulerAngles.z) < 1f)
             {
                 p.inRightPos = true;
+                if(p.CompareTag("key"))
+                {
+                    fwc += 1;
+                }
                 SpriteRenderer ssr = p.gameObject.GetComponent<SpriteRenderer>();
                 if (ssr != null)
                 {
@@ -190,10 +198,24 @@ public class PuzzleManager : MonoBehaviour
                 }
                 p.transform.position = AnswerPositions[pieces.IndexOf(p)];
                 piececount++;
-                StopCoroutine(tgCoroutine);
-                tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+                if(tgCoroutine != null)
+                    StopCoroutine(tgCoroutine);
+                if(onThirdGimic)
+                    tgCoroutine = StartCoroutine(FireThirdGimic(30f));
             }
         } 
+        if(fwc > finalWhitecount && currentPuzzleIndex == 4)
+        {
+            DialogueManager dm = DialogueManager.Instance;
+            for(int i = finalWhitecount; i < Mathf.Min(fwc,3); i ++)
+            {
+                List<DialogueLine> dialogueLines = dm.ParseCSV(dm.DialogueData_callback[dm.currentCDNum]);
+                dm.lines.AddRange(dialogueLines);
+                dm.currentCDNum += 1;
+            }
+            dm.ProgressCallback();
+            finalWhitecount = fwc;
+        }
         CheckPieceCount();
         Debug.Log(piececount);
     }
@@ -205,12 +227,22 @@ public class PuzzleManager : MonoBehaviour
             if (obj != null)
                 Destroy(obj.gameObject);
         }
+        GameObject[] pans = GameObject.FindGameObjectsWithTag("Pan");
+
+        foreach (GameObject pp in pans)
+        {
+            Destroy(pp);  // 다음 프레임 끝에 삭제됨
+        }
         //clear previous data
         pieces.Clear();
         blurredpieces.Clear();
         AnswerPositions.Clear();
-        StopCoroutine(tgCoroutine);
-        tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+        if(tgCoroutine != null)
+        {
+            StopCoroutine(tgCoroutine); 
+        }
+        if(onThirdGimic)
+            tgCoroutine = StartCoroutine(FireThirdGimic(30f));
     }
 
     public void LoadPuzzle()
@@ -228,13 +260,14 @@ public class PuzzleManager : MonoBehaviour
         var sortedPrefabs = prefabs.OrderBy(p => p.name).ToArray();
         foreach (GameObject prefab in sortedPrefabs)
         {
-            if (!(prefab.tag == "Blurred"))
+            if (!(prefab.CompareTag("Blurred") || prefab.CompareTag("key")))
             {
                 GameObject pieceObj = Instantiate(prefab);
                 Piece piece = pieceObj.GetComponent<Piece>();
                 if (piece != null)
                 {
                     pieces.Add(piece);
+                    piece.transform.Rotate(new Vector3(0,0,Random.Range(0,3) * 90f));
                 }
                 else
                 {
@@ -251,6 +284,10 @@ public class PuzzleManager : MonoBehaviour
         if (onThirdGimic)
         {
             tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+        }
+        if(currentPuzzleIndex == totalPuzzleNumber - 1)
+        {
+             ChangeToBlurredPiece();
         }
     }
 
@@ -287,7 +324,7 @@ public class PuzzleManager : MonoBehaviour
     public void ChangeToBlurredPiece()
     {
         List<Piece> newPieces = new List<Piece>(pieces);
-
+        List<Piece> PiecestoBreak = new List<Piece>();
         foreach (GameObject g in blurredpieces)
         {
             for (int i = 0; i < newPieces.Count; i++)
@@ -305,12 +342,16 @@ public class PuzzleManager : MonoBehaviour
                     piece.inRightPos = p.inRightPos;
 
                     // 원래 리스트 업데이트
-                    pieces[i] = piece;
-
-                    Destroy(p.gameObject);
+                    pieces[pieces.IndexOf(p)] = piece;
+                    PiecestoBreak.Add(p);
                     break;
                 }
             }
+        }
+        foreach(Piece p in PiecestoBreak)
+        {
+            Destroy(p.gameObject);
+            Debug.Log(p.gameObject == null);
         }
     }
 
@@ -339,13 +380,13 @@ public class PuzzleManager : MonoBehaviour
         onThirdGimic = true;
     }
 
-    IEnumerator FireThirdGimic(float delay)
+    public IEnumerator FireThirdGimic(float delay)
     {
         yield return new WaitForSeconds(delay);
         ThirdGimic(30f);
     }
 
-    void ThirdGimic(float delay)
+    public void ThirdGimic(float delay)
     {
         List<Piece> imsi = ShuffleList(pieces);
         for (int i = 0; i < pieces.Count; i++)
@@ -362,8 +403,10 @@ public class PuzzleManager : MonoBehaviour
             }
         }
         if (delay < 60f) delay += 15f;
-        StopCoroutine(tgCoroutine);
-        tgCoroutine = StartCoroutine(FireThirdGimic(delay));
+        if(tgCoroutine != null)
+            StopCoroutine(tgCoroutine);
+        if(onThirdGimic)
+            tgCoroutine = StartCoroutine(FireThirdGimic(delay));
     }
 
 
