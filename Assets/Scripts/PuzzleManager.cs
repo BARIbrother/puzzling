@@ -204,10 +204,11 @@ public class PuzzleManager : MonoBehaviour
                     tgCoroutine = StartCoroutine(FireThirdGimic(30f));
             }
         } 
-        if(fwc > finalWhitecount && currentPuzzleIndex == 4)
+        
+        if (fwc > finalWhitecount && fwc <= 3)
         {
             DialogueManager dm = DialogueManager.Instance;
-            for(int i = finalWhitecount; i < Mathf.Min(fwc,3); i ++)
+            for (int i = finalWhitecount; i < Mathf.Min(fwc, 3); i++)
             {
                 List<DialogueLine> dialogueLines = dm.ParseCSV(dm.DialogueData_callback[dm.currentCDNum]);
                 dm.lines.AddRange(dialogueLines);

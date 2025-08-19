@@ -75,7 +75,7 @@ public class ShakeCameraEffect : MonoBehaviour
         Camera cam = Camera.main;
         Vector3 startPos = cam.transform.position;
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 1; i++)
         {
             // 위로 이동
             yield return MoveTo(startPos + Vector3.up * 1.5f, 1f);

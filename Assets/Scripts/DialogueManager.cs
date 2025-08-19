@@ -23,6 +23,7 @@ public class DialogueManager : MonoBehaviour
 
     public List<TextAsset> DialogueData;
     public List<TextAsset> DialogueData_callback;
+    public bool cbMode = false;
     public int currentDNum = 0;
     public int currentCDNum = 0;
     public bool canGoToNext = false;
@@ -101,13 +102,11 @@ public class DialogueManager : MonoBehaviour
                 yield return StartCoroutine(EyeBlinkEffect.Instance.BlinkSequence());
                 break;
             case "ZI":
-                //yield return StartCoroutine(ZoomCameraEffect.Instance.ZoomIO(20f, 1f));
                 popupImage.gameObject.SetActive(true);
                 popupImage.sprite = ImagesToPopUp[CPIindex];
-                CPIindex ++;
+                CPIindex++;
                 break;
             case "ZO":
-                //yield return StartCoroutine(ZoomCameraEffect.Instance.ZoomIO(25f, 1f));
                 popupImage.sprite = null;
                 popupImage.gameObject.SetActive(false);
                 break;
@@ -142,7 +141,7 @@ public class DialogueManager : MonoBehaviour
 
             case "FA":
                 //yield return StartCoroutine(ShakeCameraEffect.Instance.Faint());
-                yield return StartCoroutine(EyeBlinkEffect.Instance.FadeFill(0f,1f));
+                yield return StartCoroutine(EyeBlinkEffect.Instance.FadeFill(0f, 1f));
                 yield return new WaitForSeconds(5f);
                 break;
 
@@ -165,6 +164,13 @@ public class DialogueManager : MonoBehaviour
                 backgroundImage.gameObject.SetActive(true);
                 portraitImage.gameObject.SetActive(true);
                 break;
+            case "S":
+                bodyText.gameObject.SetActive(false);
+                dialoguePanel.gameObject.SetActive(false);
+                yield return new WaitForSeconds(3f);
+                bodyText.gameObject.SetActive(true);
+                dialoguePanel.gameObject.SetActive(true);
+                break;
         }
 
         bodyText.text = "";
@@ -173,21 +179,13 @@ public class DialogueManager : MonoBehaviour
             bodyText.text += c;
             yield return new WaitForSeconds(0.02f);
         }
-        if (line.evt == "S")
-        {
-            bodyText.gameObject.SetActive(false);
-            dialoguePanel.gameObject.SetActive(false);
-            yield return new WaitForSeconds(3f);
-            bodyText.gameObject.SetActive(true);
-            dialoguePanel.gameObject.SetActive(true);
-        }
-        if(line.evt == "GA")
+        if (line.evt == "GA")
         {
             yield return ShakeCameraEffect.Instance.Gasp();
         }
 
         canGoToNext = true;
-        if(line.evt == "ST")
+        if (line.evt == "ST")
         {
             bodyText.gameObject.SetActive(false);
             dialoguePanel.gameObject.SetActive(false);
@@ -198,6 +196,11 @@ public class DialogueManager : MonoBehaviour
             GameManager.Instance.StartPuzzleStage();
             GameManager.Instance.AlreadyPassed = true;
             StartCoroutine(ExecuteSTAfterDelay(15f));
+        }
+        if (line.evt == "ED")
+        {
+            StartCoroutine(ZoomCameraEffect.Instance.Zoomout_Image(portraitImage, new Vector2(240, 404), new Vector2(0, 202)));
+            StartCoroutine(ZoomCameraEffect.Instance.Zoomout_Background(backgroundImage, new Vector3(1, 1, 1)));
         }
     }
 
@@ -222,9 +225,17 @@ public class DialogueManager : MonoBehaviour
         dialoguePanel.gameObject.SetActive(false);
         backgroundImage.gameObject.SetActive(false);
         portraitImage.gameObject.SetActive(false);
+        canGoToNext = false;
         lines.Clear();
         EyeBlinkEffect.Instance.blackOverlay.gameObject.SetActive(false);
-        GameManager.Instance.EndDialogueStage();
+        if (!cbMode)
+        {
+            GameManager.Instance.EndDialogueStage();
+        }
+        else
+        {
+            cbMode = true;
+        }
     }
     
     public List<DialogueLine> ParseCSV(TextAsset csvFile)
@@ -290,11 +301,12 @@ public class DialogueManager : MonoBehaviour
     {
         isOnDialogue = true;
         currentLine = 0;
-        speakerText.gameObject.SetActive(true); 
+        speakerText.gameObject.SetActive(true);
         bodyText.gameObject.SetActive(true);
         dialoguePanel.gameObject.SetActive(true);
-        backgroundImage.gameObject.SetActive(true);
-        portraitImage.gameObject.SetActive(true);
-        
+        EyeBlinkEffect.Instance.blackOverlay.gameObject.SetActive(true);
+        EyeBlinkEffect.Instance.blackOverlay.fillAmount = 1f;
+        cbMode = true;
+        ShowLine();
     }
 }

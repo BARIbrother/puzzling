@@ -271,19 +271,20 @@ MonoBehaviour:
   - {fileID: -6815437586108985893, guid: 8a78192d0f04bdd49bfd5d9011bbdb54, type: 3}
   CPIindex: 0
   DialogueData:
-  - {fileID: 4900000, guid: 69b2517942de14e398b30f4976383d3f, type: 3}
+  - {fileID: 4900000, guid: 66c7b7f94b989224091c9838ad9bb3b2, type: 3}
   - {fileID: 4900000, guid: 1e35dd9e247c94d9f92e3c51f13f3e87, type: 3}
   - {fileID: 4900000, guid: 9b1778d835c734eecbac6f78a7570f51, type: 3}
-  - {fileID: 4900000, guid: 491baa51567b645f3a2a11fe882d2bf3, type: 3}
+  - {fileID: 4900000, guid: 4cd936fdfd16f144daa40c9b12dc2c1c, type: 3}
   - {fileID: 4900000, guid: ba7c11596cbf34eb69ae1c33a5f9933e, type: 3}
-  - {fileID: 4900000, guid: 7fd76aaaaf1294a01b7229f0eb16e932, type: 3}
+  - {fileID: 4900000, guid: ea24b0bebd9c05045b2b34fb72f536fa, type: 3}
   - {fileID: 4900000, guid: f3ae05adb7e064b84ac501842906b6ce, type: 3}
   - {fileID: 4900000, guid: 5f682cfe4560c49ac84aa8c9ed599b2a, type: 3}
-  - {fileID: 4900000, guid: a9ea17766e35dcc4da622b41ec4726f7, type: 3}
+  - {fileID: 4900000, guid: d8c59bf8f651b8d40a235c0747bd4127, type: 3}
   DialogueData_callback:
   - {fileID: 4900000, guid: 149cd4ca4dc72432c9db7533c3f1d5e8, type: 3}
   - {fileID: 4900000, guid: 1da59e87616b24bd1b9ab7e4282970f5, type: 3}
   - {fileID: 4900000, guid: 66ee6056d411342f88d6aa7319559e3b, type: 3}
+  cbMode: 0
   currentDNum: 0
   currentCDNum: 0
   canGoToNext: 0
@@ -676,7 +677,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &719109615
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1284,7 +1285,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 404}
-  m_SizeDelta: {x: 481.94, y: 808.01}
+  m_SizeDelta: {x: 481, y: 808}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1917383144
 MonoBehaviour:
