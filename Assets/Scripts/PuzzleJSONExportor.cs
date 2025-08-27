@@ -1,7 +1,9 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PuzzleJsonExportor : MonoBehaviour
 {
@@ -24,6 +26,8 @@ public class PuzzleJsonExportor : MonoBehaviour
         Debug.Log("Puzzle JSON 저장 완료: " + path);
 
         // Unity에 파일 변경 알림
+        #if UNITY_EDITOR
         AssetDatabase.Refresh();
+        #endif
     }
 }

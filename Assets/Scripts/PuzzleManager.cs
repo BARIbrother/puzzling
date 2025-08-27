@@ -194,7 +194,7 @@ public class PuzzleManager : MonoBehaviour
                 SpriteRenderer ssr = p.gameObject.GetComponent<SpriteRenderer>();
                 if (ssr != null)
                 {
-                    ssr.sortingOrder = 2;
+                    ssr.sortingOrder = 1;
                 }
                 p.transform.position = AnswerPositions[pieces.IndexOf(p)];
                 piececount++;
