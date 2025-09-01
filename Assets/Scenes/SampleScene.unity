@@ -279,7 +279,7 @@ MonoBehaviour:
   - {fileID: 4900000, guid: ea24b0bebd9c05045b2b34fb72f536fa, type: 3}
   - {fileID: 4900000, guid: f3ae05adb7e064b84ac501842906b6ce, type: 3}
   - {fileID: 4900000, guid: 5f682cfe4560c49ac84aa8c9ed599b2a, type: 3}
-  - {fileID: 4900000, guid: d8c59bf8f651b8d40a235c0747bd4127, type: 3}
+  - {fileID: 4900000, guid: b2290fb25c8f4bf4e80c9d6356c24a7e, type: 3}
   DialogueData_callback:
   - {fileID: 4900000, guid: 149cd4ca4dc72432c9db7533c3f1d5e8, type: 3}
   - {fileID: 4900000, guid: 1da59e87616b24bd1b9ab7e4282970f5, type: 3}
@@ -677,7 +677,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &719109615
 RectTransform:
   m_ObjectHideFlags: 0

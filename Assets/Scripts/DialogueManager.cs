@@ -188,6 +188,7 @@ public class DialogueManager : MonoBehaviour
         if (line.evt == "ST")
         {
             bodyText.gameObject.SetActive(false);
+            bodyText.text = "";
             dialoguePanel.gameObject.SetActive(false);
             backgroundImage.gameObject.SetActive(false);
             portraitImage.gameObject.SetActive(false);
@@ -195,7 +196,12 @@ public class DialogueManager : MonoBehaviour
 
             GameManager.Instance.StartPuzzleStage();
             GameManager.Instance.AlreadyPassed = true;
-            StartCoroutine(ExecuteSTAfterDelay(15f));
+
+            PuzzleManager.Instance.ThirdGimic(15f);
+            yield return new WaitForSeconds(3f);
+            bodyText.gameObject.SetActive(true);
+            dialoguePanel.gameObject.SetActive(true);
+            canGoToNext = true;
         }
         if (line.evt == "ED")
         {
@@ -284,17 +290,6 @@ public class DialogueManager : MonoBehaviour
                 return Resources.Load<Sprite>("Portraits/StoryA");
         }
         return null;
-    }
-
-    IEnumerator ExecuteSTAfterDelay(float delay)
-    {
-        PuzzleManager.Instance.ThirdGimic(15f);
-        yield return new WaitForSeconds(delay);
-        bodyText.gameObject.SetActive(true);
-        dialoguePanel.gameObject.SetActive(true);
-        canGoToNext = false;
-        NextDialogue();
-        PuzzleManager.Instance.FireThirdGimic(30f);
     }
 
     public void ProgressCallback()

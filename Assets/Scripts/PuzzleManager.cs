@@ -201,7 +201,7 @@ public class PuzzleManager : MonoBehaviour
                 if(tgCoroutine != null)
                     StopCoroutine(tgCoroutine);
                 if(onThirdGimic)
-                    tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+                    tgCoroutine = StartCoroutine(FireThirdGimic(10f));
             }
         } 
         
@@ -238,12 +238,11 @@ public class PuzzleManager : MonoBehaviour
         pieces.Clear();
         blurredpieces.Clear();
         AnswerPositions.Clear();
-        if(tgCoroutine != null)
+        if (tgCoroutine != null)
         {
-            StopCoroutine(tgCoroutine); 
+            StopCoroutine(tgCoroutine);
         }
-        if(onThirdGimic)
-            tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+        onThirdGimic = false;
     }
 
     public void LoadPuzzle()
@@ -282,9 +281,10 @@ public class PuzzleManager : MonoBehaviour
         }
         Debug.Log("pieces loaded");
 
-        if (onThirdGimic)
+        if (index == 2 || index == 4)
         {
-            tgCoroutine = StartCoroutine(FireThirdGimic(30f));
+            onThirdGimic = true;
+            tgCoroutine = StartCoroutine(FireThirdGimic(10f));
         }
         if(currentPuzzleIndex == totalPuzzleNumber - 1)
         {
@@ -384,7 +384,7 @@ public class PuzzleManager : MonoBehaviour
     public IEnumerator FireThirdGimic(float delay)
     {
         yield return new WaitForSeconds(delay);
-        ThirdGimic(30f);
+        ThirdGimic(10f);
     }
 
     public void ThirdGimic(float delay)
@@ -403,7 +403,7 @@ public class PuzzleManager : MonoBehaviour
                 break;
             }
         }
-        if (delay < 60f) delay += 15f;
+        if (delay < 20f) delay += 5f;
         if(tgCoroutine != null)
             StopCoroutine(tgCoroutine);
         if(onThirdGimic)
