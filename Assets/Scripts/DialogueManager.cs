@@ -28,6 +28,11 @@ public class DialogueManager : MonoBehaviour
     public int currentCDNum = 0;
     public bool canGoToNext = false;
 
+    //log
+    public GameObject logPanel;               
+    public TextMeshProUGUI logText;           
+    private List<string> dialogueLog = new List<string>();
+
     Camera cam;
     public static DialogueManager Instance { get; private set; }
 
@@ -53,6 +58,11 @@ public class DialogueManager : MonoBehaviour
             if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) && canGoToNext == true)
             {
                 NextDialogue();
+            }
+
+            if (Input.GetKeyDown(KeyCode.L) && canGoToNext)
+            {
+                logPanel.SetActive(!logPanel.activeSelf);
             }
         }
     }
@@ -91,6 +101,10 @@ public class DialogueManager : MonoBehaviour
                 Debug.Log("portrait Load failed");
             }
         }
+
+        string logEntry = $"<b>{line.speaker}</b>: {line.text}";
+        dialogueLog.Add(logEntry);
+        logText.text = string.Join("\n\n", dialogueLog);
     }
 
     IEnumerator TypeText(DialogueLine line)
