@@ -16,12 +16,12 @@ public class ShakeCameraEffect : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
     void Update()
     {
-        
+
     }
 
     public IEnumerator Shake(float duration, float magnitude)
@@ -38,7 +38,7 @@ public class ShakeCameraEffect : MonoBehaviour
 
         while (elapsed < duration)
         {
-            float yOffset = Mathf.Sin(elapsed * Mathf.PI*2) * magnitude; 
+            float yOffset = Mathf.Sin(elapsed * Mathf.PI * 2) * magnitude;
             cam.transform.localPosition = originalPos + new Vector3(0, yOffset, 0);
 
             elapsed += Time.deltaTime;
@@ -87,6 +87,20 @@ public class ShakeCameraEffect : MonoBehaviour
         transform.position = startPos;
     }
 
+    public IEnumerator MoveDown()
+    {
+        Camera cam = Camera.main;
+        Vector3 startPos = cam.transform.position;
+        yield return MoveTo(startPos + Vector3.down * 0.3f, 1f);
+    }
+
+    public IEnumerator MoveUp()
+    {
+        Camera cam = Camera.main;
+        Vector3 startPos = cam.transform.position;
+        yield return MoveTo(startPos + Vector3.up * 1.5f, 1f);
+    }
+
     IEnumerator MoveTo(Vector3 target, float time)
     {
         Camera cam = Camera.main;
@@ -102,4 +116,5 @@ public class ShakeCameraEffect : MonoBehaviour
 
         cam.transform.position = target;
     }
+    
 }

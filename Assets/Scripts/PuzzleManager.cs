@@ -186,8 +186,9 @@ public class PuzzleManager : MonoBehaviour
         {
             if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.eulerAngles.z) < 1f)
             {
+                if(!p.inRightPos) SFXManager.Instance.Play("tting");
                 p.inRightPos = true;
-                if(p.CompareTag("key"))
+                if (p.CompareTag("key"))
                 {
                     fwc += 1;
                 }

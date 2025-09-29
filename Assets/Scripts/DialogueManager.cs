@@ -3,15 +3,19 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;   
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public class DialogueManager : MonoBehaviour
 {
+
+    public GameObject dialogueCanvas;
     public GameObject dialoguePanel;
     public TextMeshProUGUI speakerText;
     public TextMeshProUGUI bodyText;
     public Image portraitImage;
     public Image backgroundImage;
     public Image popupImage;
+
     //public Image portraitImage;
 
     public List<DialogueLine> lines;
@@ -29,9 +33,15 @@ public class DialogueManager : MonoBehaviour
     public bool canGoToNext = false;
 
     //log
-    public GameObject logPanel;               
-    public TextMeshProUGUI logText;           
+    public GameObject logPanel;
+    public TextMeshProUGUI logText;
     private List<string> dialogueLog = new List<string>();
+    public RectTransform LogRect;
+    public bool logMode = false;
+
+    //setting
+    public GameObject SettingPanel;
+    public bool settingMode = false;
 
     Camera cam;
     public static DialogueManager Instance { get; private set; }
@@ -55,7 +65,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (isOnDialogue)
         {
-            if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) && canGoToNext == true)
+            if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) && canGoToNext == true && !logMode && !settingMode)
             {
                 NextDialogue();
             }
@@ -63,6 +73,19 @@ public class DialogueManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.L) && canGoToNext)
             {
                 logPanel.SetActive(!logPanel.activeSelf);
+                logMode = !logMode;
+
+                if (SettingPanel.activeSelf)
+                {
+                    SettingPanel.SetActive(!SettingPanel.activeSelf);
+                    settingMode = !settingMode;
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape) && canGoToNext)
+            {
+                SettingPanel.SetActive(!SettingPanel.activeSelf);
+                settingMode = !settingMode;
             }
         }
     }
@@ -73,7 +96,7 @@ public class DialogueManager : MonoBehaviour
         lines = dialogueLines;
         isOnDialogue = true;
         currentLine = 0;
-        speakerText.gameObject.SetActive(true); 
+        speakerText.gameObject.SetActive(true);
         bodyText.gameObject.SetActive(true);
         dialoguePanel.gameObject.SetActive(true);
         backgroundImage.gameObject.SetActive(true);
@@ -87,6 +110,8 @@ public class DialogueManager : MonoBehaviour
         var line = lines[currentLine];
         canGoToNext = false;
         speakerText.text = line.speaker;
+
+        if (line.soundname.Length > 0) SFXManager.Instance.Play(line.soundname, 0.3f, true);
         StartCoroutine(TypeText(line));
 
         if (!string.IsNullOrEmpty(line.speaker))
@@ -95,16 +120,23 @@ public class DialogueManager : MonoBehaviour
             if (portrait != null)
             {
                 portraitImage.sprite = portrait;
-                Debug.Log("portrait Loaded");    
+                Debug.Log("portrait Loaded");
             }
-            else{
+            else
+            {
                 Debug.Log("portrait Load failed");
             }
         }
 
-        string logEntry = $"<b>{line.speaker}</b>: {line.text}";
+        string logEntry = $"<b>{line.speaker}</b>\n {line.text}";
         dialogueLog.Add(logEntry);
-        logText.text = string.Join("\n\n", dialogueLog);
+        logText.text = string.Join("\n\n_____________________________________________", dialogueLog);
+
+        Vector2 size = LogRect.sizeDelta;
+
+        // 높이를 100 늘리기
+        size.y += 100f;
+        LogRect.sizeDelta = size;
     }
 
     IEnumerator TypeText(DialogueLine line)
@@ -156,7 +188,7 @@ public class DialogueManager : MonoBehaviour
             case "FA":
                 //yield return StartCoroutine(ShakeCameraEffect.Instance.Faint());
                 yield return StartCoroutine(EyeBlinkEffect.Instance.FadeFill(0f, 1f));
-                yield return new WaitForSeconds(5f);
+                yield return new WaitForSeconds(1f);
                 break;
 
             case "PO":
@@ -184,6 +216,22 @@ public class DialogueManager : MonoBehaviour
                 yield return new WaitForSeconds(3f);
                 bodyText.gameObject.SetActive(true);
                 dialoguePanel.gameObject.SetActive(true);
+                break;
+            case "BWOD":
+                yield return StartCoroutine(EyeBlinkEffect.Instance.BlinkSequence());
+                portraitImage.gameObject.SetActive(false);
+                break;
+            case "DOWN":
+                yield return StartCoroutine(P_Moveup());
+                break;
+            case "UP":
+                yield return StartCoroutine(P_Movedown());
+                break;
+            case "P2":
+                portraitImage.sprite = Resources.Load<Sprite>("Portraits/StoryB");
+                break;
+            case "P3":
+                portraitImage.sprite = Resources.Load<Sprite>("Portraits/StoryC");
                 break;
         }
 
@@ -241,6 +289,7 @@ public class DialogueManager : MonoBehaviour
     {
         // 대화 종료 처리
         speakerText.gameObject.SetActive(false);
+        bodyText.text = "";
         bodyText.gameObject.SetActive(false);
         dialoguePanel.gameObject.SetActive(false);
         backgroundImage.gameObject.SetActive(false);
@@ -257,7 +306,7 @@ public class DialogueManager : MonoBehaviour
             cbMode = true;
         }
     }
-    
+
     public List<DialogueLine> ParseCSV(TextAsset csvFile)
     {
         List<DialogueLine> l = new List<DialogueLine>();
@@ -267,26 +316,31 @@ public class DialogueManager : MonoBehaviour
         {
             if (string.IsNullOrWhiteSpace(row)) continue;
             string[] fields = row.Split(',');
-
-            
-            if (fields.Length >= 3)
+            DialogueLine line = new DialogueLine { };
+            if (fields[0].Trim().Length == 0)
             {
-                DialogueLine line = new DialogueLine
-                {
-                    speaker = fields[0].Trim(),
-                    text = fields[1].Trim(),
-                    evt = fields[2].Trim()
-                };
-                l.Add(line);
+                break;
             }
-            else
+            switch (fields.Length)
             {
-                DialogueLine line = new DialogueLine
-                {
-                    speaker = fields[0].Trim(),
-                    text = fields[1].Trim(),
-                };
-                l.Add(line);
+                case 2:
+                    line.speaker = fields[0].Trim();
+                    line.text = fields[1].Trim();
+                    l.Add(line);
+                    break;
+                case 3:
+                    line.speaker = fields[0].Trim();
+                    line.text = fields[1].Trim();
+                    line.evt = fields[2].Trim();
+                    l.Add(line);
+                    break;
+                default:
+                    line.speaker = fields[0].Trim();
+                    line.text = fields[1].Trim();
+                    line.evt = fields[2].Trim();
+                    line.soundname = fields[3].Trim();
+                    l.Add(line);
+                    break;
             }
         }
 
@@ -298,10 +352,10 @@ public class DialogueManager : MonoBehaviour
     {
         Debug.Log((portraitName == "???"));
         // Resources/Portraits 폴더에서 불러오기
-        switch(portraitName)
+        switch (portraitName)
         {
             case "???":
-                return Resources.Load<Sprite>("Portraits/StoryA");
+                return Resources.Load<Sprite>("Portraits/story_regular_0");
         }
         return null;
     }
@@ -317,5 +371,34 @@ public class DialogueManager : MonoBehaviour
         EyeBlinkEffect.Instance.blackOverlay.fillAmount = 1f;
         cbMode = true;
         ShowLine();
+    }
+    
+    public IEnumerator P_Movedown()
+    {
+        yield return P_Moveto(Vector3.down * 300f, 1f);
+    }
+
+
+    public IEnumerator P_Moveup()
+    {
+        yield return P_Moveto(Vector3.up * 60f, 1f);
+    }
+
+    IEnumerator P_Moveto(Vector3 howmuch, float time)
+    {
+        Vector3 initialPos = portraitImage.transform.position;
+        Vector3 BinitialPos = backgroundImage.transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < time)
+        {
+            portraitImage.transform.position = Vector3.Lerp(initialPos, initialPos + howmuch, elapsed / time);
+            backgroundImage.transform.position = Vector3.Lerp(BinitialPos, BinitialPos + howmuch, elapsed / time);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        portraitImage.transform.position = initialPos + howmuch;
+        backgroundImage.transform.position = BinitialPos + howmuch;
     }
 }

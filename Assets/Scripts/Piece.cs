@@ -45,7 +45,7 @@ public class Piece : MonoBehaviour
 
     void OnMouseDrag()
     {
-        if (clicked && !inRightPos)
+        if (clicked && !inRightPos && !DialogueManager.Instance.logMode && !DialogueManager.Instance.settingMode)
         {
 
             Vector3 currentmouseWorld = GetMouseWorldPosition();
@@ -63,6 +63,7 @@ public class Piece : MonoBehaviour
     void OnMouseUp()
     {
         clicked = false;
+        SFXManager.Instance.Play("tak");
         List<Piece> cg = PuzzleManager.Instance.GetConnectedGroup(this);
         PuzzleManager.Instance.CheckAnswer();
         PuzzleManager.Instance.CheckConnection(this);
