@@ -15,6 +15,7 @@ public class DialogueManager : MonoBehaviour
     public Image portraitImage;
     public Image backgroundImage;
     public Image popupImage;
+    public Image tableImage;
 
     //public Image portraitImage;
 
@@ -111,7 +112,27 @@ public class DialogueManager : MonoBehaviour
         canGoToNext = false;
         speakerText.text = line.speaker;
 
-        if (line.soundname.Length > 0) SFXManager.Instance.Play(line.soundname, 0.3f, true);
+        if (line.soundname.Length > 0)
+        {
+            switch(line.soundname)
+            {
+                case "flashback":
+                    SFXManager.Instance.Play(line.soundname, 0.3f, true);
+                    break;
+                case "shak":
+                    SFXManager.Instance.Play(line.soundname, 1f, false);
+                    break;
+                case "siren":
+                    SFXManager.Instance.Play(line.soundname, 0.3f, true);
+                    break;
+                case "endsound":
+                    SFXManager.Instance.Play(line.soundname, 0.3f, true);
+                    break;
+                case "ending_music":
+                    SFXManager.Instance.Play(line.soundname, 0.3f, true);
+                    break;
+            }
+        }
         StartCoroutine(TypeText(line));
 
         if (!string.IsNullOrEmpty(line.speaker))
@@ -375,30 +396,33 @@ public class DialogueManager : MonoBehaviour
     
     public IEnumerator P_Movedown()
     {
-        yield return P_Moveto(Vector3.down * 300f, 1f);
+        yield return P_Moveto(Vector3.down * 400f, 1f);
     }
 
 
     public IEnumerator P_Moveup()
     {
-        yield return P_Moveto(Vector3.up * 60f, 1f);
+        yield return P_Moveto(Vector3.up * 80f, 1f);
     }
 
     IEnumerator P_Moveto(Vector3 howmuch, float time)
     {
         Vector3 initialPos = portraitImage.transform.position;
         Vector3 BinitialPos = backgroundImage.transform.position;
+        Vector3 TinitialPos = tableImage.transform.position;
         float elapsed = 0f;
 
         while (elapsed < time)
         {
             portraitImage.transform.position = Vector3.Lerp(initialPos, initialPos + howmuch, elapsed / time);
             backgroundImage.transform.position = Vector3.Lerp(BinitialPos, BinitialPos + howmuch, elapsed / time);
+            tableImage.transform.position = Vector3.Lerp(TinitialPos, TinitialPos + howmuch, elapsed / time);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
         portraitImage.transform.position = initialPos + howmuch;
         backgroundImage.transform.position = BinitialPos + howmuch;
+        tableImage.transform.position = TinitialPos + howmuch;
     }
 }

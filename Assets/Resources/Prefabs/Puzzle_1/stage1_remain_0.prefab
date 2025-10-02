@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2680957750749805831
 Transform:
   m_ObjectHideFlags: 0
@@ -75,8 +75,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
-  m_Sprite: {fileID: 3583717524428154804, guid: 37e1a9b953fadb84cbc7765d03f4276a, type: 3}
+  m_SortingOrder: 1
+  m_Sprite: {fileID: 2788880922282022759, guid: 568cc9042ec18455f99bab583d1ae4c4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

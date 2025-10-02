@@ -2,15 +2,17 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 
-public enum GameStage { D, P }
+public enum GameStage { D, P , E}
 public class GameManager : MonoBehaviour
 {
     public DialogueManager dm;
     public PuzzleManager pm;
+    public MainScreenManager mm;
     public int currentStageIndex = -1;
-    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.P, GameStage.D, GameStage.D, GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.P, GameStage.D};
+    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.P, GameStage.D, GameStage.D, GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.P, GameStage.D, GameStage.E};
     public static GameManager Instance { get; private set; }
 
     public bool AlreadyPassed = false;
@@ -27,6 +29,7 @@ public class GameManager : MonoBehaviour
     {
         dm = DialogueManager.Instance;
         pm = PuzzleManager.Instance;
+        mm = MainScreenManager.Instance;
         NextStage();
     }
 
@@ -40,11 +43,15 @@ public class GameManager : MonoBehaviour
                 DialogueManager.Instance.EndDialogue();
                 dm.currentDNum += 1;
             }
-            else
+            else if(stages[currentStageIndex] == GameStage.P)
             {
                 PuzzleManager.Instance.ClearPuzzle();
                 pm.currentPuzzleIndex += 1;
             }   
+            else if(stages[currentStageIndex] == GameStage.E)
+            {
+                mm.ChangeToEndingScene();
+            }
             NextStage(); 
         }
     }
