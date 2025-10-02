@@ -2,12 +2,19 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine.InputSystem;
 
 public class PuzzleManager : MonoBehaviour
 {
     public List<Piece> pieces;
     public List<GameObject> blurredpieces;
+    public List<GameObject> keypieces;
     public List<Vector3> AnswerPositions;
+
+    public SpriteRenderer image1;
+    public SpriteRenderer image2;
+    public SpriteRenderer image3;
 
 
     public bool can_click = true;
@@ -69,7 +76,7 @@ public class PuzzleManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             Debug.Log("second gimic");
-            ChangeToBlurredPiece();
+            //ChangeToBlurredPiece();
         }
         //third gimic
         if (Input.GetKeyDown(KeyCode.Alpha3))
@@ -229,6 +236,11 @@ public class PuzzleManager : MonoBehaviour
             if (obj != null)
                 Destroy(obj.gameObject);
         }
+        foreach (var obj in new List<GameObject>(blurredpieces))
+        {
+            if (obj != null)
+                Destroy(obj);
+        }
         GameObject[] pans = GameObject.FindGameObjectsWithTag("Pan");
 
         foreach (GameObject pp in pans)
@@ -238,12 +250,73 @@ public class PuzzleManager : MonoBehaviour
         //clear previous data
         pieces.Clear();
         blurredpieces.Clear();
+        keypieces.Clear();
         AnswerPositions.Clear();
+        //stop timer
         if (tgCoroutine != null)
         {
             StopCoroutine(tgCoroutine);
         }
         onThirdGimic = false;
+    }
+
+    public IEnumerator showAnswer()
+    {
+        //show cutscene
+        yield return StartCoroutine(FadeSequenceRoutine());
+        
+        ClearPuzzle();
+        GameManager.Instance.EndPuzzleStage();
+    }
+
+    public SpriteRenderer FindSpriteRenderer(string objectName)
+    {
+        GameObject go = GameObject.Find(objectName);
+        if (go == null)
+        {
+            Debug.LogError("GameObject not found: " + objectName);
+            return null;
+        }
+
+        SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+        if (sr == null)
+        {
+            Debug.LogError("SpriteRenderer not found on: " + objectName);
+        }
+        return sr;
+    }
+
+    public IEnumerator FadeSequenceRoutine()
+    {
+        yield return StartCoroutine(FadeIn(image1, 2f));
+        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(FadeIn(image2, 2f));
+        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(FadeIn(image3, 2f));
+        yield return new WaitForSeconds(3f);
+    }
+
+    public IEnumerator FadeIn(SpriteRenderer sr, float duration)
+    {
+        if (sr == null) yield break;
+
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Clamp01(timer / duration);
+            SetAlpha(sr, alpha);
+            yield return null;
+        }
+        SetAlpha(sr, 1f);
+    }
+
+    public void SetAlpha(SpriteRenderer sr, float alpha)
+    {
+        if (sr == null) return;
+        Color c = sr.color;
+        c.a = alpha;
+        sr.color = c;
     }
 
     public void LoadPuzzle()
@@ -268,28 +341,40 @@ public class PuzzleManager : MonoBehaviour
                 if (piece != null)
                 {
                     pieces.Add(piece);
-                    piece.transform.Rotate(new Vector3(0,0,Random.Range(0,3) * 90f));
+                    piece.transform.Rotate(new Vector3(0, 0, Random.Range(0, 3) * 90f));
                 }
                 else
                 {
                     Debug.LogWarning($"Piece 컴포넌트가 없는 프리팹: {prefab.name}");
                 }
             }
-            else
+            else if (prefab.CompareTag("Blurred"))
             {
                 blurredpieces.Add(prefab);
+            }
+            else if (prefab.CompareTag("key"))
+            {
+                keypieces.Add(prefab);
             }
         }
         Debug.Log("pieces loaded");
 
-        if (index == 2 || index == 4)
+        //setting answer images
+        string baseName = $"stage{currentPuzzleIndex + 1}_answer_";
+        image1 = FindSpriteRenderer(baseName + "0(Clone)");
+        image2 = FindSpriteRenderer(baseName + "1(Clone)");
+        image3 = FindSpriteRenderer(baseName + "2(Clone)");
+
+        // 모두 투명하게 초기화
+        SetAlpha(image1, 0f);
+        SetAlpha(image2, 0f);
+        SetAlpha(image3, 0f);
+
+        if (index == 2 || index == 4) StartCoroutine(Gimic2_fadeToWhite());
+        if (index == 3) Gimic3_turnAllatOnce();
+        if (index == 5)
         {
-            onThirdGimic = true;
-            tgCoroutine = StartCoroutine(FireThirdGimic(10f));
-        }
-        if(currentPuzzleIndex == totalPuzzleNumber - 1)
-        {
-             ChangeToBlurredPiece();
+            StartCoroutine(Gimic4_first4AndsecondOBO());
         }
     }
 
@@ -323,10 +408,26 @@ public class PuzzleManager : MonoBehaviour
         }
     }
 
-    public void ChangeToBlurredPiece()
+    public IEnumerator Gimic4_first4AndsecondOBO()
     {
         List<Piece> newPieces = new List<Piece>(pieces);
-        List<Piece> PiecestoBreak = new List<Piece>();
+        foreach (GameObject g in keypieces)
+        {
+            for (int i = 0; i < newPieces.Count; i++)
+            {
+                Piece p = newPieces[i];
+                if (g.name.Contains(p.name.Substring(0, p.name.Length - 7)))
+                {
+                    StartCoroutine(FadeCoroutine(p, g, 0f));
+                }
+            }
+        }
+        yield return Gimic2_fadeToWhite();
+    }
+
+    public void Gimic3_turnAllatOnce()
+    {
+        List<Piece> newPieces = new List<Piece>(pieces);
         foreach (GameObject g in blurredpieces)
         {
             for (int i = 0; i < newPieces.Count; i++)
@@ -334,6 +435,7 @@ public class PuzzleManager : MonoBehaviour
                 Piece p = newPieces[i];
                 if (g.name.Contains(p.name.Substring(0, p.name.Length - 7)))
                 {
+                    /*
                     GameObject pieceObj = Instantiate(g);
                     Piece piece = pieceObj.GetComponent<Piece>();
 
@@ -347,13 +449,79 @@ public class PuzzleManager : MonoBehaviour
                     pieces[pieces.IndexOf(p)] = piece;
                     PiecestoBreak.Add(p);
                     break;
+                    */
+                    StartCoroutine(FadeCoroutine(p, g, 1.5f));
                 }
             }
         }
-        foreach(Piece p in PiecestoBreak)
+    }
+
+    public IEnumerator Gimic2_fadeToWhite()
+    {
+        List<Piece> newPieces = new List<Piece>(pieces);
+        foreach (GameObject g in ShuffleList(blurredpieces))
         {
-            Destroy(p.gameObject);
-            Debug.Log(p.gameObject == null);
+            Debug.Log("starting GImig2 sequence");
+            for (int i = 0; i < newPieces.Count; i++)
+            {
+                Piece p = newPieces[i];
+                if (g.name.Contains(p.name.Substring(0, p.name.Length - 7)))
+                {
+                    yield return FadeCoroutine(p, g);
+                    break;
+                }
+            }
+        }
+    }
+
+    public IEnumerator FadeCoroutine(Piece toOut, GameObject toIn, float hd = 5f)
+    {
+        if (!toOut.inRightPos)
+        {
+            float timer = 0f;
+            SpriteRenderer sr_toOut = toOut.GetComponent<SpriteRenderer>();
+            float halfDuration = hd;
+
+            //fade out original
+            while (timer < halfDuration)
+            {
+                timer += Time.deltaTime;
+                float alpha = Mathf.Clamp01(1f - (timer / halfDuration));
+                SetAlpha(sr_toOut, alpha);
+                yield return null;
+            }
+
+            //change puzzle
+            GameObject pieceObj = Instantiate(toIn);
+            Piece piece = pieceObj.GetComponent<Piece>();
+
+            piece.transform.position = toOut.transform.position;
+            piece.transform.rotation = toOut.transform.rotation;
+            piece.connectedPieces = toOut.connectedPieces;
+            piece.clicked = toOut.clicked;
+            piece.inRightPos = toOut.inRightPos;
+
+            //update list
+            pieces[pieces.IndexOf(toOut)] = piece;
+            toOut.gameObject.SetActive(false);
+
+            SpriteRenderer sr_toIn = piece.GetComponent<SpriteRenderer>();
+
+            // 3. 알파를 0 -> 1로 올리기
+            timer = 0f;
+            while (timer < halfDuration)
+            {
+                timer += Time.deltaTime;
+                float alpha = Mathf.Clamp01(timer / halfDuration);
+                SetAlpha(sr_toIn, alpha);
+                yield return null;
+            }
+
+            SetAlpha(sr_toIn, 1f); // 마지막 보정
+        }
+        else
+        {
+            yield return new WaitForSeconds(hd * 2);
         }
     }
 
@@ -416,8 +584,7 @@ public class PuzzleManager : MonoBehaviour
     {
         if (piececount == pieces.Count)
         {
-            ClearPuzzle();
-            GameManager.Instance.EndPuzzleStage();
+            StartCoroutine(showAnswer());
         }
     }
 }

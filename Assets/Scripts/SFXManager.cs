@@ -20,6 +20,9 @@ public class SFXManager : MonoBehaviour
     public AudioMixer audioMixer;
     public Slider volumeSlider;
 
+    public ScrollRect logRect;
+    public Slider sensitivitySlider;
+
     void Awake()
     {
         if (Instance == null)
@@ -40,6 +43,13 @@ public class SFXManager : MonoBehaviour
         audioMixer.SetFloat("Volume", savedVolume);
 
         volumeSlider.onValueChanged.AddListener(SetVolume);
+
+        float savedValue = PlayerPrefs.GetFloat("LogScrollSensitivity", 10f);
+        sensitivitySlider.value = savedValue;
+        logRect.scrollSensitivity = savedValue;
+
+        // 슬라이더 값 변경 → ScrollRect에 즉시 반영
+        sensitivitySlider.onValueChanged.AddListener(SetSensitivity);
     }
 
     public void Play(string name, float volume = 1f, bool isLoop = false)
@@ -60,10 +70,16 @@ public class SFXManager : MonoBehaviour
             Debug.Log("unavailable audio name");
         }
     }
-    
+
     public void SetVolume(float volume)
     {
         audioMixer.SetFloat("Volume", volume);
         PlayerPrefs.SetFloat("Volume", volume);
+    }
+    
+    public void SetSensitivity(float value)
+    {
+        logRect.scrollSensitivity = value;
+        PlayerPrefs.SetFloat("LogScrollSensitivity", value); // 감도 저장
     }
 }

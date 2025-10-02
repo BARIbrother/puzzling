@@ -5,14 +5,15 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 
 
-public enum GameStage { D, P , E}
+public enum GameStage { D, P , E, T}
 public class GameManager : MonoBehaviour
 {
     public DialogueManager dm;
     public PuzzleManager pm;
     public MainScreenManager mm;
+    public TutorialManager tm;
     public int currentStageIndex = -1;
-    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.P, GameStage.D, GameStage.D, GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.P, GameStage.D, GameStage.E};
+    public List<GameStage> stages = new List<GameStage>{ GameStage.D, GameStage.T, GameStage.P, GameStage.D, GameStage.D, GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.D,GameStage.P,GameStage.D,GameStage.P, GameStage.D, GameStage.E};
     public static GameManager Instance { get; private set; }
 
     public bool AlreadyPassed = false;
@@ -30,6 +31,7 @@ public class GameManager : MonoBehaviour
         dm = DialogueManager.Instance;
         pm = PuzzleManager.Instance;
         mm = MainScreenManager.Instance;
+        tm = TutorialManager.Instance;
         NextStage();
     }
 
@@ -97,6 +99,20 @@ public class GameManager : MonoBehaviour
         NextStage();
     }
 
+    public void StartTutorialStage()
+    {
+        Debug.Log("Start Tutorial");
+        tm.ShowTutorial();
+        StartPuzzleStage();
+    }
+
+    public void EndTutorialStage()
+    {
+        NextStage();
+    }
+
+
+
     void NextStage()
     {
         if (currentStageIndex < stages.Count - 1)
@@ -109,11 +125,19 @@ public class GameManager : MonoBehaviour
         {
             StartDialogueStage();
         }
-        else
+        else if (stages[currentStageIndex] == GameStage.P)
         {
             StartPuzzleStage();
             PuzzleManager.Instance.can_click = true;
-        }    
+        }
+        else if (stages[currentStageIndex] == GameStage.E)
+        {
+            mm.ChangeToEndingScene();
+        }
+        else if (stages[currentStageIndex] == GameStage.T)
+        {
+            StartTutorialStage();
+        }
 
         
     }

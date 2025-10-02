@@ -73,21 +73,31 @@ public class DialogueManager : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.L) && canGoToNext)
             {
-                logPanel.SetActive(!logPanel.activeSelf);
-                logMode = !logMode;
-
-                if (SettingPanel.activeSelf)
-                {
-                    SettingPanel.SetActive(!SettingPanel.activeSelf);
-                    settingMode = !settingMode;
-                }
+                StartLog();
             }
 
             if (Input.GetKeyDown(KeyCode.Escape) && canGoToNext)
             {
-                SettingPanel.SetActive(!SettingPanel.activeSelf);
-                settingMode = !settingMode;
+                StartSet();
             }
+        }
+    }
+
+    public void StartSet()
+    {
+        SettingPanel.SetActive(!SettingPanel.activeSelf);
+        settingMode = !settingMode;
+    }
+
+    public void StartLog()
+    {
+        logPanel.SetActive(!logPanel.activeSelf);
+        logMode = !logMode;
+
+        if (SettingPanel.activeSelf)
+        {
+            SettingPanel.SetActive(!SettingPanel.activeSelf);
+            settingMode = !settingMode;
         }
     }
 
@@ -110,7 +120,6 @@ public class DialogueManager : MonoBehaviour
         Debug.Log(lines.Count);
         var line = lines[currentLine];
         canGoToNext = false;
-        speakerText.text = line.speaker;
 
         if (line.soundname.Length > 0)
         {
@@ -135,19 +144,6 @@ public class DialogueManager : MonoBehaviour
         }
         StartCoroutine(TypeText(line));
 
-        if (!string.IsNullOrEmpty(line.speaker))
-        {
-            Sprite portrait = LoadPortrait(line.speaker);
-            if (portrait != null)
-            {
-                portraitImage.sprite = portrait;
-                Debug.Log("portrait Loaded");
-            }
-            else
-            {
-                Debug.Log("portrait Load failed");
-            }
-        }
 
         string logEntry = $"<b>{line.speaker}</b>\n {line.text}";
         dialogueLog.Add(logEntry);
@@ -156,12 +152,13 @@ public class DialogueManager : MonoBehaviour
         Vector2 size = LogRect.sizeDelta;
 
         // 높이를 100 늘리기
-        size.y += 100f;
+        size.y += 200f;
         LogRect.sizeDelta = size;
     }
 
     IEnumerator TypeText(DialogueLine line)
     {
+        
         Debug.Log("Dialogue started");
         switch (line.evt)
         {
@@ -192,11 +189,57 @@ public class DialogueManager : MonoBehaviour
                 GameManager.Instance.AlreadyPassed = true;
                 Debug.Log("started puzzle");
 
+                yield return new WaitForSeconds(10f);
+
+                speakerText.gameObject.SetActive(true);
+                bodyText.gameObject.SetActive(true);
+                dialoguePanel.gameObject.SetActive(true);
+                backgroundImage.gameObject.SetActive(true);
+                portraitImage.gameObject.SetActive(true);
+                canGoToNext = true;
+                break;
+
+            case "TH3":
+                Debug.Log("TH activated");
+                speakerText.gameObject.SetActive(false);
+                bodyText.gameObject.SetActive(false);
+                dialoguePanel.gameObject.SetActive(false);
+                backgroundImage.gameObject.SetActive(false);
+                portraitImage.gameObject.SetActive(false);
+                canGoToNext = false;
+                Debug.Log("closed conv ui");
+
+                GameManager.Instance.StartPuzzleStage();
+                PuzzleManager.Instance.can_click = false;
+                GameManager.Instance.AlreadyPassed = true;
+                Debug.Log("started puzzle");
+
+                yield return new WaitForSeconds(4f);
+
+                speakerText.gameObject.SetActive(true);
+                bodyText.gameObject.SetActive(true);
+                dialoguePanel.gameObject.SetActive(true);
+                backgroundImage.gameObject.SetActive(true);
+                portraitImage.gameObject.SetActive(true);
+                canGoToNext = true;
+                break;
+
+            case "TH4":
+                Debug.Log("TH activated");
+                speakerText.gameObject.SetActive(false);
+                bodyText.gameObject.SetActive(false);
+                dialoguePanel.gameObject.SetActive(false);
+                backgroundImage.gameObject.SetActive(false);
+                portraitImage.gameObject.SetActive(false);
+                canGoToNext = false;
+                Debug.Log("closed conv ui");
+
+                GameManager.Instance.StartPuzzleStage();
+                PuzzleManager.Instance.can_click = false;
+                GameManager.Instance.AlreadyPassed = true;
+                Debug.Log("started puzzle");
+
                 yield return new WaitForSeconds(2f);
-                //yield return StartCoroutine(ShakeCameraEffect.Instance.Shake(0.5f, 1.5f));
-                PuzzleManager.Instance.ChangeToBlurredPiece();
-                yield return new WaitForSeconds(2f);
-                Debug.Log("shake cam");
 
                 speakerText.gameObject.SetActive(true);
                 bodyText.gameObject.SetActive(true);
@@ -256,6 +299,8 @@ public class DialogueManager : MonoBehaviour
                 break;
         }
 
+
+        speakerText.text = line.speaker;
         bodyText.text = "";
         foreach (char c in line.text)
         {
@@ -313,6 +358,8 @@ public class DialogueManager : MonoBehaviour
         bodyText.text = "";
         bodyText.gameObject.SetActive(false);
         dialoguePanel.gameObject.SetActive(false);
+        dialogueLog.Clear();
+        logText.text = "";
         backgroundImage.gameObject.SetActive(false);
         portraitImage.gameObject.SetActive(false);
         canGoToNext = false;
@@ -396,13 +443,13 @@ public class DialogueManager : MonoBehaviour
     
     public IEnumerator P_Movedown()
     {
-        yield return P_Moveto(Vector3.down * 400f, 1f);
+        yield return P_Moveto(Vector3.down * 450f, 1f);
     }
 
 
     public IEnumerator P_Moveup()
     {
-        yield return P_Moveto(Vector3.up * 80f, 1f);
+        yield return P_Moveto(Vector3.up * 90f, 1f);
     }
 
     IEnumerator P_Moveto(Vector3 howmuch, float time)

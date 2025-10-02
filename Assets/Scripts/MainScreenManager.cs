@@ -3,6 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class MainScreenManager : MonoBehaviour
 {
+    public GameObject SettingPanel;
+    public bool settingMode = false;
     public static MainScreenManager Instance { get; private set; }
 
 
@@ -12,6 +14,12 @@ public class MainScreenManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+    }
+
+    public void StartSet()
+    {
+        SettingPanel.SetActive(!SettingPanel.activeSelf);
+        settingMode = !settingMode;
     }
 
 
