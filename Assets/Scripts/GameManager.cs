@@ -24,6 +24,12 @@ public class GameManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        if (GameMode.continueGame)
+        {
+            currentStageIndex = SaverLoader.LoadStageIndex()-1;
+            Debug.Log(SaverLoader.LoadStageIndex() + " " + SaverLoader.LoadPuzzleIndex() + " " + SaverLoader.LoadDNum());
+        } 
     }
 
     void Start()
@@ -58,10 +64,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void OnApplicationQuit()
+    {
+        Debug.Log("게임이 종료됩니다!");
+        SaverLoader.SaveProgress(currentStageIndex, pm.currentPuzzleIndex, dm.currentDNum);
+    }
+
     public void StartPuzzleStage()
     {
         Debug.Log("Start Puzzle");
-        if(!AlreadyPassed)
+        if (!AlreadyPassed)
         {
             pm.LoadPuzzle();
         }
@@ -115,6 +127,7 @@ public class GameManager : MonoBehaviour
 
     void NextStage()
     {
+        dm.ClearDialogue();
         if (currentStageIndex < stages.Count - 1)
         {
             Debug.Log("going to stage:" + (currentStageIndex + 1));

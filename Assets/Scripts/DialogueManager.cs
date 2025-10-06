@@ -53,12 +53,15 @@ public class DialogueManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        if (GameMode.continueGame)
+        {
+            currentDNum = SaverLoader.LoadDNum();
+        }
     }
 
     void Start()
     {
-        Debug.Log("대화 시작");
-        //StartDialogue();
         cam = Camera.main;
     }
 
@@ -111,13 +114,15 @@ public class DialogueManager : MonoBehaviour
         bodyText.gameObject.SetActive(true);
         dialoguePanel.gameObject.SetActive(true);
         backgroundImage.gameObject.SetActive(true);
-        portraitImage.gameObject.SetActive(true);
+        portraitImage.gameObject.SetActive(true);      
+        EyeBlinkEffect.Instance.blackOverlay.gameObject.SetActive(true);
+        if (currentDNum == 0) EyeBlinkEffect.Instance.blackOverlay.fillAmount = 1f;
         ShowLine();
     }
 
     void ShowLine()
     {
-        Debug.Log(lines.Count);
+        Debug.Log("showing line");
         var line = lines[currentLine];
         canGoToNext = false;
 
@@ -159,7 +164,6 @@ public class DialogueManager : MonoBehaviour
     IEnumerator TypeText(DialogueLine line)
     {
         
-        Debug.Log("Dialogue started");
         switch (line.evt)
         {
             case "B":
@@ -291,6 +295,9 @@ public class DialogueManager : MonoBehaviour
             case "UP":
                 yield return StartCoroutine(P_Movedown());
                 break;
+            case "P1":
+                portraitImage.sprite = Resources.Load<Sprite>("Portraits/StoryA");
+                break;
             case "P2":
                 portraitImage.sprite = Resources.Load<Sprite>("Portraits/StoryB");
                 break;
@@ -307,6 +314,7 @@ public class DialogueManager : MonoBehaviour
             bodyText.text += c;
             yield return new WaitForSeconds(0.02f);
         }
+
         if (line.evt == "GA")
         {
             yield return ShakeCameraEffect.Instance.Gasp();
@@ -353,7 +361,18 @@ public class DialogueManager : MonoBehaviour
 
     public void EndDialogue()
     {
-        // 대화 종료 처리
+        if (!cbMode)
+        {
+            GameManager.Instance.EndDialogueStage();
+        }
+        else
+        {
+            cbMode = false;
+        }
+    }
+
+    public void ClearDialogue()
+    {
         speakerText.gameObject.SetActive(false);
         bodyText.text = "";
         bodyText.gameObject.SetActive(false);
@@ -365,14 +384,6 @@ public class DialogueManager : MonoBehaviour
         canGoToNext = false;
         lines.Clear();
         EyeBlinkEffect.Instance.blackOverlay.gameObject.SetActive(false);
-        if (!cbMode)
-        {
-            GameManager.Instance.EndDialogueStage();
-        }
-        else
-        {
-            cbMode = true;
-        }
     }
 
     public List<DialogueLine> ParseCSV(TextAsset csvFile)

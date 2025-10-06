@@ -38,18 +38,23 @@ public class SFXManager : MonoBehaviour
 
     void Start()
     {
-        float savedVolume = PlayerPrefs.GetFloat("Volume", 0f);
+        float savedVolume = SaverLoader.LoadBgm();
         volumeSlider.value = savedVolume;
         audioMixer.SetFloat("Volume", savedVolume);
 
         volumeSlider.onValueChanged.AddListener(SetVolume);
 
-        float savedValue = PlayerPrefs.GetFloat("LogScrollSensitivity", 10f);
+        float savedValue = SaverLoader.LoadSensitivity();
         sensitivitySlider.value = savedValue;
         logRect.scrollSensitivity = savedValue;
 
         // 슬라이더 값 변경 → ScrollRect에 즉시 반영
         sensitivitySlider.onValueChanged.AddListener(SetSensitivity);
+    }
+
+    void OnApplicationQuit()
+    {
+        SaverLoader.SaveSettings(volumeSlider.value, sensitivitySlider.value);
     }
 
     public void Play(string name, float volume = 1f, bool isLoop = false)

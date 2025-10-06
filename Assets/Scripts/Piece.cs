@@ -20,7 +20,7 @@ public class Piece : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (clicked && !inRightPos)
+        if (clicked && !inRightPos && !TutorialManager.Instance.isTutoState)
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
@@ -35,7 +35,7 @@ public class Piece : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (!inRightPos && PuzzleManager.Instance.can_click)
+        if (!inRightPos && PuzzleManager.Instance.can_click &&  !TutorialManager.Instance.isTutoState)
         {
             Debug.Log("clicked");
             clicked = true;

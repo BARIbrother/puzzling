@@ -23,8 +23,9 @@ public class MainScreenManager : MonoBehaviour
     }
 
 
-    public void ChangeToGameScene()
+    public void ChangeToGameScene(bool isContinue)
     {
+        GameMode.continueGame = isContinue;
         SceneManager.LoadScene("SampleScene"); // 실제 게임 씬 이름
     }
 

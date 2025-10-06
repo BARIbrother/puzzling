@@ -40,6 +40,11 @@ public class PuzzleManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        if (GameMode.continueGame)
+        {
+            currentPuzzleIndex = SaverLoader.LoadPuzzleIndex();
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -119,6 +124,18 @@ public class PuzzleManager : MonoBehaviour
             dragged.connectedPieces.Add(pieces[i]);
             pieces[i].connectedPieces.Add(dragged);
             Debug.Log("connected to piece " + (i + 1));
+        }
+    }
+
+    public void Reconnect()
+    {
+        foreach (Piece p in pieces)
+        {
+            p.connectedPieces.Clear();
+        }
+        foreach (Piece p in pieces)
+        {
+            CheckConnection(p);
         }
     }
 
@@ -497,12 +514,12 @@ public class PuzzleManager : MonoBehaviour
 
             piece.transform.position = toOut.transform.position;
             piece.transform.rotation = toOut.transform.rotation;
-            piece.connectedPieces = toOut.connectedPieces;
             piece.clicked = toOut.clicked;
             piece.inRightPos = toOut.inRightPos;
 
             //update list
             pieces[pieces.IndexOf(toOut)] = piece;
+            Reconnect();
             toOut.gameObject.SetActive(false);
 
             SpriteRenderer sr_toIn = piece.GetComponent<SpriteRenderer>();

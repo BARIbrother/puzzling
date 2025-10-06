@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,13 +35,13 @@ public class TutorialManager : MonoBehaviour
     {
         if (isTutoState)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
             {
                 tutoMessages[currentIndex].enabled = false;
                 currentIndex++;
                 if (currentIndex >= tutoMessages.Length)
                 {
-                    
+
                     TutorialCanvas.SetActive(false);
                     isTutoState = false;
                     GameManager.Instance.EndTutorialStage();
@@ -53,7 +54,13 @@ public class TutorialManager : MonoBehaviour
     public void ShowTutorial()
     {
         TutorialCanvas.SetActive(true);
-        isTutoState = true;
+        StartCoroutine(w1());
         tutoMessages[currentIndex].enabled = true;
+    }
+
+    public IEnumerator w1()
+    {
+        yield return new WaitForSeconds(0.1f);
+        isTutoState = true;
     }
 }
