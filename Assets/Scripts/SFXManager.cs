@@ -64,7 +64,8 @@ public class SFXManager : MonoBehaviour
         if (sfxDict.ContainsKey(name))
         {
             audioSource.clip = sfxDict[name];
-            audioSource.Play();
+            if(isLoop) audioSource.Play();
+            else audioSource.PlayOneShot(audioSource.clip, volume);
         }
         else if (String.Equals(name, "endsound"))
         {

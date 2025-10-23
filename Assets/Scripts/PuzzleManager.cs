@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine.InputSystem;
+using JetBrains.Annotations;
 
 public class PuzzleManager : MonoBehaviour
 {
     public List<Piece> pieces;
-    public List<GameObject> blurredpieces;
-    public List<GameObject> keypieces;
+    public List<Piece> blurredpieces;
+    public List<Piece> keypieces;
     public List<Vector3> AnswerPositions;
 
     public SpriteRenderer image1;
@@ -29,6 +30,7 @@ public class PuzzleManager : MonoBehaviour
     public Coroutine tgCoroutine;
     private int piececount = 0;
     public int finalWhitecount = 0;
+    public List<Piece> piecesToBack = new List<Piece>();
     private List<Piece> piecesToChangeWhite;
     private static System.Random rng = new System.Random();
     //instance template
@@ -61,33 +63,6 @@ public class PuzzleManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            currentPuzzleIndex -= 1;
-            LoadPuzzle();
-        }
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            currentPuzzleIndex += 1;
-            LoadPuzzle();
-        }
-        //first gimic
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            StartCoroutine(ChangeColorAFterDelay(5f));
-        }
-        //second gimic
-        //activates when starting game
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            Debug.Log("second gimic");
-            //ChangeToBlurredPiece();
-        }
-        //third gimic
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            StartThirdGimic();
-        }
     }
 
     //checking if released piece fits into other pieces
@@ -206,16 +181,18 @@ public class PuzzleManager : MonoBehaviour
     {
         piececount = 0;
         int fwc = 0;
+        List<Piece> newmatch = new List<Piece>();
         foreach (Piece p in pieces)
         {
             if (Vector3.Distance(p.transform.position, AnswerPositions[pieces.IndexOf(p)]) < 0.1f && Mathf.Abs(p.transform.eulerAngles.z) < 1f)
             {
-                if(!p.inRightPos) SFXManager.Instance.Play("tting");
-                p.inRightPos = true;
+                if (!p.inRightPos) SFXManager.Instance.Play("tting");
                 if (p.CompareTag("key"))
                 {
                     fwc += 1;
+                    if (!p.inRightPos) newmatch.Add(p);
                 }
+                p.inRightPos = true;
                 SpriteRenderer ssr = p.gameObject.GetComponent<SpriteRenderer>();
                 if (ssr != null)
                 {
@@ -223,13 +200,13 @@ public class PuzzleManager : MonoBehaviour
                 }
                 p.transform.position = AnswerPositions[pieces.IndexOf(p)];
                 piececount++;
-                if(tgCoroutine != null)
+                if (tgCoroutine != null)
                     StopCoroutine(tgCoroutine);
-                if(onThirdGimic)
+                if (onThirdGimic)
                     tgCoroutine = StartCoroutine(FireThirdGimic(10f));
             }
-        } 
-        
+        }
+
         if (fwc > finalWhitecount && fwc <= 3)
         {
             DialogueManager dm = DialogueManager.Instance;
@@ -239,11 +216,28 @@ public class PuzzleManager : MonoBehaviour
                 dm.lines.AddRange(dialogueLines);
                 dm.currentCDNum += 1;
             }
-            dm.ProgressCallback();
+            StartCoroutine(MainFlow(newmatch));
+
             finalWhitecount = fwc;
         }
         CheckPieceCount();
         Debug.Log(piececount);
+    }
+    IEnumerator MainFlow(List<Piece> newmatch)
+    {
+        foreach (Piece g in newmatch)
+        {
+            foreach (Piece p in piecesToBack)
+            {
+                if (p.name.Contains(g.name.Substring(0, g.name.Length - 7)))
+                {
+                    StartCoroutine(FadeCoroutine(g, p, 3f));
+                }
+            }
+        }
+        yield return new WaitForSeconds(4f);
+        DialogueManager dm = DialogueManager.Instance;
+        dm.ProgressCallback();
     }
 
     public void ClearPuzzle()
@@ -253,7 +247,7 @@ public class PuzzleManager : MonoBehaviour
             if (obj != null)
                 Destroy(obj.gameObject);
         }
-        foreach (var obj in new List<GameObject>(blurredpieces))
+        foreach (var obj in new List<Piece>(blurredpieces))
         {
             if (obj != null)
                 Destroy(obj);
@@ -269,6 +263,7 @@ public class PuzzleManager : MonoBehaviour
         blurredpieces.Clear();
         keypieces.Clear();
         AnswerPositions.Clear();
+        piecesToBack.Clear();
         //stop timer
         if (tgCoroutine != null)
         {
@@ -281,7 +276,7 @@ public class PuzzleManager : MonoBehaviour
     {
         //show cutscene
         yield return StartCoroutine(FadeSequenceRoutine());
-        
+       
         ClearPuzzle();
         GameManager.Instance.EndPuzzleStage();
     }
@@ -346,23 +341,21 @@ public class PuzzleManager : MonoBehaviour
         AnswerPositions = data.AnswerPositions;
 
         //loading puzzle piece prefab
-        GameObject[] prefabs = Resources.LoadAll<GameObject>($"Prefabs/Puzzle_{index}");
+        Piece[] prefabs = Resources.LoadAll<Piece>($"Prefabs/Puzzle_{index}");
+        GameObject[] boards = Resources.LoadAll<GameObject>($"Prefabs/Puzzle_{index}");
 
         var sortedPrefabs = prefabs.OrderBy(p => p.name).ToArray();
-        foreach (GameObject prefab in sortedPrefabs)
+        var filtered = boards.Where(a => a.GetComponent<Piece>() == null).ToArray();
+        foreach (Piece prefab in sortedPrefabs)
         {
             if (!(prefab.CompareTag("Blurred") || prefab.CompareTag("key")))
             {
-                GameObject pieceObj = Instantiate(prefab);
+                Piece pieceObj = Instantiate(prefab);
                 Piece piece = pieceObj.GetComponent<Piece>();
                 if (piece != null)
                 {
                     pieces.Add(piece);
                     piece.transform.Rotate(new Vector3(0, 0, Random.Range(0, 3) * 90f));
-                }
-                else
-                {
-                    Debug.LogWarning($"Piece 컴포넌트가 없는 프리팹: {prefab.name}");
                 }
             }
             else if (prefab.CompareTag("Blurred"))
@@ -373,6 +366,11 @@ public class PuzzleManager : MonoBehaviour
             {
                 keypieces.Add(prefab);
             }
+        }
+
+        foreach(GameObject p in filtered)
+        {
+            Instantiate(p);
         }
         Debug.Log("pieces loaded");
 
@@ -393,6 +391,7 @@ public class PuzzleManager : MonoBehaviour
         {
             StartCoroutine(Gimic4_first4AndsecondOBO());
         }
+        SFXManager.Instance.Play("puzzlebgm", 0.3f, true);
     }
 
     private IEnumerator ChangeColorAFterDelay(float delaySeconds)
@@ -428,7 +427,7 @@ public class PuzzleManager : MonoBehaviour
     public IEnumerator Gimic4_first4AndsecondOBO()
     {
         List<Piece> newPieces = new List<Piece>(pieces);
-        foreach (GameObject g in keypieces)
+        foreach (Piece g in keypieces)
         {
             for (int i = 0; i < newPieces.Count; i++)
             {
@@ -445,7 +444,7 @@ public class PuzzleManager : MonoBehaviour
     public void Gimic3_turnAllatOnce()
     {
         List<Piece> newPieces = new List<Piece>(pieces);
-        foreach (GameObject g in blurredpieces)
+        foreach (Piece g in blurredpieces)
         {
             for (int i = 0; i < newPieces.Count; i++)
             {
@@ -476,7 +475,7 @@ public class PuzzleManager : MonoBehaviour
     public IEnumerator Gimic2_fadeToWhite()
     {
         List<Piece> newPieces = new List<Piece>(pieces);
-        foreach (GameObject g in ShuffleList(blurredpieces))
+        foreach (Piece g in ShuffleList(blurredpieces))
         {
             Debug.Log("starting GImig2 sequence");
             for (int i = 0; i < newPieces.Count; i++)
@@ -490,8 +489,7 @@ public class PuzzleManager : MonoBehaviour
             }
         }
     }
-
-    public IEnumerator FadeCoroutine(Piece toOut, GameObject toIn, float hd = 5f)
+    public IEnumerator FadeCoroutine(Piece toOut, Piece toIn, float hd = 5f)
     {
         if (!toOut.inRightPos)
         {
@@ -509,7 +507,7 @@ public class PuzzleManager : MonoBehaviour
             }
 
             //change puzzle
-            GameObject pieceObj = Instantiate(toIn);
+            Piece pieceObj = Instantiate(toIn);
             Piece piece = pieceObj.GetComponent<Piece>();
 
             piece.transform.position = toOut.transform.position;
@@ -521,6 +519,7 @@ public class PuzzleManager : MonoBehaviour
             pieces[pieces.IndexOf(toOut)] = piece;
             Reconnect();
             toOut.gameObject.SetActive(false);
+            piecesToBack.Add(toOut);
 
             SpriteRenderer sr_toIn = piece.GetComponent<SpriteRenderer>();
 

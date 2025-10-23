@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      stage5_3_whitened_0: -3065271023585197757
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

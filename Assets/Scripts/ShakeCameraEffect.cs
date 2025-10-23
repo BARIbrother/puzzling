@@ -91,14 +91,14 @@ public class ShakeCameraEffect : MonoBehaviour
     {
         Camera cam = Camera.main;
         Vector3 startPos = cam.transform.position;
-        yield return MoveTo(startPos + Vector3.down * 0.4f, 1f);
+        yield return MoveTo(startPos + Vector3.down * 0.2f, 1f);
     }
 
     public IEnumerator MoveUp()
     {
         Camera cam = Camera.main;
         Vector3 startPos = cam.transform.position;
-        yield return MoveTo(startPos + Vector3.up * 2f, 1f);
+        yield return MoveTo(startPos + Vector3.up * 1f, 1f);
     }
 
     IEnumerator MoveTo(Vector3 target, float time)
