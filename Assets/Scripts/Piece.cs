@@ -22,11 +22,11 @@ public class Piece : MonoBehaviour
     {
         if (clicked && !inRightPos && !TutorialManager.Instance.isTutoState)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
             {
                 PuzzleManager.Instance.AdjustRotation(this, 90f);
             }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             {
                 PuzzleManager.Instance.AdjustRotation(this, -90f);
             }

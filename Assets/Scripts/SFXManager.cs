@@ -57,15 +57,18 @@ public class SFXManager : MonoBehaviour
         SaverLoader.SaveSettings(volumeSlider.value, sensitivitySlider.value);
     }
 
-    public void Play(string name, float volume = 1f, bool isLoop = false)
+    public void Play(string name, float volume = 1f, bool isbgm = false)
     {
         audioSource.volume = volume;
-        audioSource.loop = isLoop;
+        audioSource.loop = isbgm;
         if (sfxDict.ContainsKey(name))
         {
-            audioSource.clip = sfxDict[name];
-            if(isLoop) audioSource.Play();
-            else audioSource.PlayOneShot(audioSource.clip, volume);
+            if(isbgm)
+            {
+                audioSource.clip = sfxDict[name];
+                audioSource.Play();
+            }
+            else audioSource.PlayOneShot(sfxDict[name], volume);
         }
         else if (String.Equals(name, "endsound"))
         {
@@ -76,6 +79,25 @@ public class SFXManager : MonoBehaviour
             Debug.Log("unavailable audio name");
         }
     }
+    /*
+    public void playBGM(string name, float volume = 1f)
+    {
+        bgmSource.volume = volume;
+        if (sfxDict.ContainsKey(name))
+        {
+            bgmSource.clip = sfxDict[name];
+            bgmSource.Play();
+        }
+        else if (String.Equals(name, "endsound"))
+        {
+            bgmSource.Stop();
+        }
+        else
+        {
+            Debug.Log("unavailable audio name");
+        }
+    }
+    */
 
     public void SetVolume(float volume)
     {

@@ -217,7 +217,6 @@ public class PuzzleManager : MonoBehaviour
                 dm.currentCDNum += 1;
             }
             StartCoroutine(MainFlow(newmatch));
-
             finalWhitecount = fwc;
         }
         CheckPieceCount();
@@ -229,9 +228,11 @@ public class PuzzleManager : MonoBehaviour
         {
             foreach (Piece p in piecesToBack)
             {
-                if (p.name.Contains(g.name.Substring(0, g.name.Length - 7)))
+                Debug.Log(p.name.Substring(0, p.name.Length - 7));
+                Debug.Log(g.name.Contains(p.name.Substring(0, p.name.Length - 7)));
+                if (g.name.Contains(p.name.Substring(0, p.name.Length - 7)))
                 {
-                    StartCoroutine(FadeCoroutine(g, p, 3f));
+                    StartCoroutine(FadeCoroutine(g, p, 1f, true));
                 }
             }
         }
@@ -250,7 +251,12 @@ public class PuzzleManager : MonoBehaviour
         foreach (var obj in new List<Piece>(blurredpieces))
         {
             if (obj != null)
-                Destroy(obj);
+                Destroy(obj.gameObject);
+        }
+        foreach(var obj in new List<Piece>(piecesToBack))
+        {
+            if(obj != null)
+                Destroy(obj.gameObject);
         }
         GameObject[] pans = GameObject.FindGameObjectsWithTag("Pan");
 
@@ -264,6 +270,7 @@ public class PuzzleManager : MonoBehaviour
         keypieces.Clear();
         AnswerPositions.Clear();
         piecesToBack.Clear();
+        SFXManager.Instance.Play("endsound",1f,false);
         //stop timer
         if (tgCoroutine != null)
         {
@@ -391,7 +398,7 @@ public class PuzzleManager : MonoBehaviour
         {
             StartCoroutine(Gimic4_first4AndsecondOBO());
         }
-        SFXManager.Instance.Play("puzzlebgm", 0.3f, true);
+        SFXManager.Instance.Play("puzzlebgm", 0.2f, true);
     }
 
     private IEnumerator ChangeColorAFterDelay(float delaySeconds)
@@ -489,9 +496,9 @@ public class PuzzleManager : MonoBehaviour
             }
         }
     }
-    public IEnumerator FadeCoroutine(Piece toOut, Piece toIn, float hd = 5f)
+    public IEnumerator FadeCoroutine(Piece toOut, Piece toIn, float hd = 5f, bool already = false)
     {
-        if (!toOut.inRightPos)
+        if (!toOut.inRightPos || already)
         {
             float timer = 0f;
             SpriteRenderer sr_toOut = toOut.GetComponent<SpriteRenderer>();
@@ -505,10 +512,18 @@ public class PuzzleManager : MonoBehaviour
                 SetAlpha(sr_toOut, alpha);
                 yield return null;
             }
-
+            
+            Piece piece;
             //change puzzle
-            Piece pieceObj = Instantiate(toIn);
-            Piece piece = pieceObj.GetComponent<Piece>();
+            if(!already)
+            {
+                Piece pieceObj = Instantiate(toIn);
+                piece = pieceObj.GetComponent<Piece>();
+            }
+            else
+            {
+                piece = toIn;
+            }
 
             piece.transform.position = toOut.transform.position;
             piece.transform.rotation = toOut.transform.rotation;
@@ -519,9 +534,12 @@ public class PuzzleManager : MonoBehaviour
             pieces[pieces.IndexOf(toOut)] = piece;
             Reconnect();
             toOut.gameObject.SetActive(false);
+            toIn.gameObject.SetActive(true);
+            Debug.Log("Joining " + toIn.gameObject.name);
             piecesToBack.Add(toOut);
 
             SpriteRenderer sr_toIn = piece.GetComponent<SpriteRenderer>();
+            SetAlpha(sr_toIn, 0f);
 
             // 3. 알파를 0 -> 1로 올리기
             timer = 0f;

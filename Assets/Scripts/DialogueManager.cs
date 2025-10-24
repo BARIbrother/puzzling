@@ -368,6 +368,20 @@ public class DialogueManager : MonoBehaviour
         else
         {
             cbMode = false;
+            SFXManager.Instance.Play("puzzlebgm", 0.3f, true);
+
+            isOnDialogue = false;
+            canGoToNext = false;
+            currentLine = 0;
+            speakerText.gameObject.SetActive(false);
+            bodyText.gameObject.SetActive(false);
+            dialoguePanel.gameObject.SetActive(false);
+            dialogueLog.Clear();
+            lines.Clear();
+            bodyText.text = "";
+            logText.text = "";
+            EyeBlinkEffect.Instance.blackOverlay.gameObject.SetActive(false);
+            EyeBlinkEffect.Instance.blackOverlay.fillAmount = 0f;
         }
     }
 
@@ -454,13 +468,13 @@ public class DialogueManager : MonoBehaviour
     
     public IEnumerator P_Movedown()
     {
-        yield return P_Moveto(Vector3.down * 450f, 1f);
+        yield return P_Moveto(Vector3.down * 280f, 1f);
     }
 
 
     public IEnumerator P_Moveup()
     {
-        yield return P_Moveto(Vector3.up * 90f, 1f);
+        yield return P_Moveto(Vector3.up * 40f, 1f);
     }
 
     IEnumerator P_Moveto(Vector3 howmuch, float time)
