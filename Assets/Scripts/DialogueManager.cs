@@ -468,13 +468,13 @@ public class DialogueManager : MonoBehaviour
     
     public IEnumerator P_Movedown()
     {
-        yield return P_Moveto(Vector3.down * 280f, 1f);
+        yield return P_Moveto(Vector3.down * 600f, 1f);
     }
 
 
     public IEnumerator P_Moveup()
     {
-        yield return P_Moveto(Vector3.up * 40f, 1f);
+        yield return P_Moveto(Vector3.up * 120f, 1f);
     }
 
     IEnumerator P_Moveto(Vector3 howmuch, float time)
